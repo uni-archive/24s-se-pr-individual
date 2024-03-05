@@ -121,6 +121,7 @@
           <input type="number" class="form-control"
                  id="horseHeight"
                  name="horseHeight"
+                 min="0.01"
                  step="0.01"
                  [(ngModel)]="height"
                  required
@@ -128,7 +129,6 @@
         </div>
         <!-- \TEMPLATE EXLCUDE BEGIN\ -->
         <ng-template #heightDetail>
-          <p>HHIII</p>
           <span class="col-form-label col-md-10 col-lg-8">{{horse.height}}</span>
         </ng-template>
         <!-- \TEMPLATE EXLCUDE END\ -->
@@ -143,10 +143,12 @@
           <input type="number" class="form-control"
                  id="horseWeight"
                  name="horseWeight"
+                 min="1"
                  step="1"
                  [(ngModel)]="weight"
                  required
                  >
+          <!-- todo for some reason 0.1 is also valid -->
         </div>
         <!-- \TEMPLATE EXLCUDE BEGIN\ -->
         <ng-template #weightDetail>

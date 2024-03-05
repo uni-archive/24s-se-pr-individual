@@ -83,6 +83,8 @@ export class HorseCreateEditComponent implements OnInit {
     switch (this.mode) {
       case HorseCreateEditMode.create:
         return 'Create New Horse';
+      case HorseCreateEditMode.edit:
+        return 'Edit Horse ';
       default:
         return '?';
     }
@@ -92,6 +94,8 @@ export class HorseCreateEditComponent implements OnInit {
     switch (this.mode) {
       case HorseCreateEditMode.create:
         return 'Create';
+      case HorseCreateEditMode.edit:
+        return 'Save';
       default:
         return '?';
     }
@@ -114,6 +118,8 @@ export class HorseCreateEditComponent implements OnInit {
     switch (this.mode) {
       case HorseCreateEditMode.create:
         return 'created';
+      case HorseCreateEditMode.edit:
+        return 'saved';
       default:
         return '?';
     }
@@ -122,6 +128,26 @@ export class HorseCreateEditComponent implements OnInit {
   ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.mode = data.mode;
+
+      if (this.mode === HorseCreateEditMode.edit) {
+        this.route.params.subscribe(params => {
+          const id = Number(params.id);
+          if (id) {
+            this.service.getById(id).subscribe({
+              next: horse => {
+                this.horse = horse;
+                this.dateOfBirthSet = true;
+                this.heightSet = true;
+                this.weightSet = true;
+              },
+              error: error => {
+                console.error('Error loading horse', error);
+                // TODO show an error message to the user. Include and sensibly present the info from the backend!
+              }
+            });
+          }
+        });
+      }
     });
   }
 
@@ -147,6 +173,9 @@ export class HorseCreateEditComponent implements OnInit {
       switch (this.mode) {
         case HorseCreateEditMode.create:
           observable = this.service.create(this.horse);
+          break;
+        case HorseCreateEditMode.edit:
+          observable = this.service.update(this.horse);
           break;
         default:
           console.error('Unknown HorseCreateEditMode', this.mode);
