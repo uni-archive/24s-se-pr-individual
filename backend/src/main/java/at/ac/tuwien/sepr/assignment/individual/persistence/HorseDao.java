@@ -53,4 +53,14 @@ public interface HorseDao {
    * @return the created horse
    */
   Horse create(HorseDetailDto horse) throws ConflictException;
+
+  /**
+   * Delete the horse with given ID from the persistent data store.
+   *
+   * @param id the ID of the horse to delete
+   * @return the deleted horse
+   * @throws NotFoundException if the Horse with the given ID does not exist in the persistent data store
+   * @throws ConflictException if the Horse is already part of a tournament
+   */
+  Horse deleteById(long id) throws NotFoundException, ConflictException;
 }

@@ -3,6 +3,7 @@ package at.ac.tuwien.sepr.assignment.individual.persistence.impl;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
+import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.persistence.HorseDao;
@@ -58,6 +59,9 @@ public class HorseJdbcDao implements HorseDao {
       + "  , ?"
       + "  , ?"
       + ")";
+
+  private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME
+      + " WHERE id = ?";
 
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
@@ -155,6 +159,19 @@ public class HorseJdbcDao implements HorseDao {
     }
 
     return h;
+  }
+
+  @Override
+  public Horse deleteById(long id) throws NotFoundException, ConflictException {
+    LOG.trace("deleteById({})", id);
+    Horse horse = getById(id);
+    int updated = jdbcTemplate.update(SQL_DELETE, id);
+    if (updated == 0) {
+      throw new NotFoundException("Could not delete horse with ID " + id + ", because it does not exist");
+    }
+    LOG.debug("deleteById() update gave following response: {}", updated);
+    // todo revisit this when tournaments work
+    return horse;
   }
 
 

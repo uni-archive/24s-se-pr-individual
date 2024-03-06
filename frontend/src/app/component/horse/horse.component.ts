@@ -64,6 +64,19 @@ export class HorseComponent implements OnInit {
     this.searchChangedObservable.next();
   }
 
+  deleteHorse(horse: Horse): void {
+    this.service.delete(horse.id!).subscribe({
+      next: data => {
+        this.notification.success(`Horse ${horse.name} successfully deleted.`);
+        this.reloadHorses();
+      },
+      error: error => {
+        console.error('Error deleting horse', error);
+        this.notification.error('Could not delete horse: ' + error.message, 'Error Deleting Horse');
+      }
+    });
+  }
+
   breedSuggestions = (input: string): Observable<string[]> =>
     this.breedService.breedsByName(input, 5)
       .pipe(map(bs =>

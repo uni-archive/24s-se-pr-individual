@@ -194,4 +194,17 @@ export class HorseCreateEditComponent implements OnInit {
     }
   }
 
+  public onDelete() {
+    this.service.delete(this.horse.id!).subscribe({
+      next: data => {
+        this.notification.success(`Horse ${this.horse.name} successfully deleted.`);
+        this.router.navigate(['/horses']);
+      },
+      error: error => {
+        console.error('Error deleting horse', error);
+        // TODO show an error message to the user. Include and sensibly present the info from the backend!
+      }
+    });
+  }
+
 }

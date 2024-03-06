@@ -11,14 +11,14 @@ Vergessen Sie nicht im Projekt ihren Namen und Matrikelnummer zu ersetzen.
 **Matrikelnummer**: 12231214
 
 
-| Datum  | Startzeit | Dauer | Story-ID | Tätigkeit                            |
-|--------|-----------|-------|----------|--------------------------------------|
-| 05.03. | 21h       | 50m   | US1      | create functionality                 |
-| 05.03. | 22h       | 1h30  | US2      | implemented horse edit functionality |
-| 06.03. | 22h20     | 50m   | US4      | implemented horse detail view        |
-|        |           |       |          |                                      |
+| Datum  | Startzeit | Dauer | Story-ID | Tätigkeit                                              |
+|--------|-----------|-------|----------|--------------------------------------------------------|
+| 05.03. | 21h       | 50m   | US1      | create functionality                                   |
+| 05.03. | 22h       | 1h30  | US2      | implemented horse edit functionality                   |
+| 06.03. | 22h20     | 50m   | US4      | implemented horse detail view                          |
+| 06.03  | 23h10     | 20m   | US3      | implemented horse delete, todo: check if in tournament |
 
-**Gesamtsumme der Zeit**: 2h20 
+**Gesamtsumme der Zeit**: 3h30 
 
 // TODO\
 horse edit error handling?

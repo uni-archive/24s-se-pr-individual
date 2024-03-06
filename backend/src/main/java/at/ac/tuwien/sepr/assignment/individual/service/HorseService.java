@@ -55,4 +55,14 @@ public interface HorseService {
    * @throws ConflictException   if the data given for the horse is in conflict with the data currently in the system (breed does not exist, …)
    */
   HorseDetailDto create(HorseDetailDto horse) throws ValidationException, ConflictException;
+
+  /**
+   * Delete the horse with given ID from the persistent data store.
+   *
+   * @param id the ID of the horse to delete
+   * @return the deleted horse
+   * @throws NotFoundException if the horse with the given ID does not exist in the persistent data store
+   * @throws ConflictException if the horse is part of a tournament
+   */
+  HorseDetailDto deleteById(long id) throws NotFoundException, ConflictException;
 }
