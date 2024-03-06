@@ -1,0 +1,82 @@
+
+<h1 class="display-1">Horse Detail</h1>
+
+
+<div class="row">
+  <!-- Start name and date of birth row -->
+  <div class="mb-2 col-lg-6">
+    <!-- When nesting rows, always make row > col-* > row. The Bootstrap classes do not work right when an element is both col* and row -->
+    <div class="row">
+      <label class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        Name
+      </label>
+      <span class="col-form-label col-md-10 col-lg-8">{{horse.name}}</span>
+    </div>
+    </div>
+  <div class="mb-2 col-lg-6">
+    <div class="row">
+      <label class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        Date of Birth
+      </label>
+      <span class="col-form-label col-md-10 col-lg-8">{{horse.dateOfBirth}}</span>
+    </div>
+  </div>
+  <!-- End name and date of birth row -->
+</div>
+
+<div class="row">
+  <!-- Start sex row -->
+  <div class="mb-2 col-lg-6">
+    <div class="row">
+      <label class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        Sex
+      </label>
+      <span class="col-form-label col-md-10 col-lg-8">{{horse.sex}}</span>
+    </div>
+  </div>
+
+  <div class="mb-2 col-lg-6">
+    <div class="row">
+      <label class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+        Breed
+      </label>
+      <span class="col-form-label col-md-10 col-lg-8">{{horse.breed?.name ?? 'No breed set'}}</span>
+    </div>
+  </div>
+  <!-- End sex row -->
+</div>
+
+<div class="row">
+  <!-- Start height and weight row -->
+  <div class="mb-2 col-lg-6">
+    <div class="row"><label class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+      Height [m]
+    </label>
+      <span class="col-form-label col-md-10 col-lg-8">{{horse.height}}</span>
+    </div>
+  </div>
+  <div class="mb-2 col-lg-6">
+    <div class="row"><label class="col-form-label text-md-end text-muted col-md-2 col-lg-4">
+      Weight [kg]
+    </label>
+      <span class="col-form-label col-md-10 col-lg-8">{{horse.weight}}</span>
+    </div>
+  </div>
+</div>
+
+<div class="mt-4 d-flex flex-row">
+  <button type="button"
+          class="btn btn-danger"
+  >
+    <i class="bi bi-trash"></i>
+    Delete
+  </button>
+
+  <span class="flex-grow-1"></span>
+  <button type="submit"
+          class="btn btn-primary"
+          [routerLink]="['/horses', 'edit', horse.id]"
+  >
+    Edit
+  </button>
+</div>

@@ -1,0 +1,45 @@
+import {Component, OnInit} from '@angular/core';
+import {Horse} from "../../../dto/horse";
+import {Sex} from "../../../dto/sex";
+import {HorseService} from "../../../service/horse.service";
+import {ActivatedRoute, Router} from "@angular/router";
+import {ToastrService} from "ngx-toastr";
+
+@Component({
+  selector: 'app-horse-detail',
+  templateUrl: './horse-detail.component.html',
+  styleUrl: './horse-detail.component.scss'
+})
+export class HorseDetailComponent implements OnInit {
+  horse: Horse = {
+    name: '',
+    sex: Sex.female,
+    dateOfBirth: new Date(), // TODO this is bad
+    height: 0, // TODO this is bad
+    weight: 0, // TODO this is bad
+  };
+
+  constructor(
+    private service: HorseService,
+    private route: ActivatedRoute,
+    private notification: ToastrService,
+  ) {
+  }
+
+  ngOnInit(): void {
+    this.route.params.subscribe(params => {
+      const id = Number(params.id);
+      if (id) {
+        this.service.getById(id).subscribe({
+          next: horse => {
+            this.horse = horse;
+          },
+          error: error => {
+            console.error('Error loading horse', error);
+            // TODO show an error message to the user. Include and sensibly present the info from the backend!
+          }
+        });
+      }
+    });
+  }
+}
