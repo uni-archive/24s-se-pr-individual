@@ -1,13 +1,12 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {environment} from '../../environments/environment';
-import {map, Observable, throwError} from 'rxjs';
+import {Observable, tap, throwError} from 'rxjs';
 import {formatIsoDate} from '../util/date-helper';
 import {
-  TournamentCreateDto, TournamentDetailDto, TournamentDetailParticipantDto,
+  TournamentCreateDto, TournamentDetailDto,
   TournamentListDto,
   TournamentSearchParams,
-  TournamentStandingsDto, TournamentStandingsTreeDto
 } from "../dto/tournament";
 const baseUri = environment.backendUrl + '/tournaments';
 
@@ -30,6 +29,33 @@ export class TournamentService {
     return throwError(() => ({message: "Not implemented yet"}));
   }
 
-
+  /**
+   * Get a list of all tournaments in the system.
+   * @param searchParams the search parameters to filter the list of tournaments
+   * @return an Observable for the list of tournaments
+   */
+  public search(searchParams: TournamentSearchParams): Observable<TournamentListDto[]> {
+    if (searchParams.name === '') {
+      delete searchParams.name;
+    }
+    let params = new HttpParams();
+    if (searchParams.name) {
+      params = params.append('name', searchParams.name);
+    }
+    if (searchParams.startDate) {
+      params = params.append('startDate', formatIsoDate(searchParams.startDate));
+    }
+    if (searchParams.endDate) {
+      params = params.append('endDate', formatIsoDate(searchParams.endDate));
+    }
+    if (searchParams.limit) { // todo implement limit in search page
+      params = params.append('limit', searchParams.limit);
+    }
+    return this.http.get<TournamentListDto[]>(baseUri, { params })
+      .pipe(tap(tournaments => tournaments.map(t => {
+        t.startDate = new Date(t.startDate); // Parse date string
+        t.endDate = new Date(t.endDate); // Parse date string
+      })));
+  }
 
 }

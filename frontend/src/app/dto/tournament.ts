@@ -4,6 +4,7 @@ export interface TournamentSearchParams {
   name?: string;
   startDate?: Date;
   endDate?: Date;
+  limit?: number;
 }
 
 export interface TournamentListDto {

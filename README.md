@@ -16,7 +16,11 @@ Vergessen Sie nicht im Projekt ihren Namen und Matrikelnummer zu ersetzen.
 | 05.03. | 21h       | 50m   | US1      | create functionality                                   |
 | 05.03. | 22h       | 1h30  | US2      | implemented horse edit functionality                   |
 | 06.03. | 22h20     | 50m   | US4      | implemented horse detail view                          |
-| 06.03  | 23h10     | 20m   | US3      | implemented horse delete, todo: check if in tournament |
+| 06.03. | 23h10     | 20m   | US3      | implemented horse delete, todo: check if in tournament |
+| 07.03. | 13h       | 1h20m | US5      | implemented tournament search & sql create statements  |
+|        |       |       |          |                                                        |
+|        |           |       |          |                                                        |
+|        |           |       |          |                                                        |
 
 **Gesamtsumme der Zeit**: 3h30 
 

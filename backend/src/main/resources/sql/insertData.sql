@@ -64,3 +64,12 @@ VALUES
     (-31, 'Leo', 'MALE', '2017-03-05', 1.70, 720, -8),
     (-32, 'Luna', 'FEMALE', '2018-10-10', 1.62, 670, -19);
 
+-- Generate Tournament test data
+DELETE FROM tournament WHERE id < 0;
+
+INSERT INTO tournament (id, name, start_date, end_date)
+VALUES
+    (-1, 'Spring Tournament', '2021-04-01', '2021-04-30'),
+    (-2, 'Summer Tournament', '2021-07-01', '2021-07-31'),
+    (-3, 'Autumn Tournament', '2021-10-01', '2021-10-31'),
+    (-4, 'Winter Tournament', '2021-12-01', '2021-12-31');
