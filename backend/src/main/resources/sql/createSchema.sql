@@ -28,10 +28,10 @@ CREATE TABLE IF NOT EXISTS tournament
 CREATE TABLE IF NOT EXISTS tournament_participant
 (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  tournament_id BIGINT REFERENCES tournament(id),
-  horse_id BIGINT REFERENCES horse(id),
-  entry_number INT,
-  round_reached INT
+  tournament_id BIGINT REFERENCES tournament(id) NOT NULL,
+  horse_id BIGINT REFERENCES horse(id) NOT NULL,
+  entry_number INT NOT NULL,
+  round_reached INT DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS tournament_trees (

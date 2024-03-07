@@ -1,29 +1,22 @@
 package at.ac.tuwien.sepr.assignment.individual.persistence.impl;
 
-import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
-import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
-import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
-import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
-import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
-import at.ac.tuwien.sepr.assignment.individual.persistence.HorseDao;
 import at.ac.tuwien.sepr.assignment.individual.persistence.TournamentDao;
-import at.ac.tuwien.sepr.assignment.individual.type.Sex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Collection;
-import java.util.List;
 
 @Repository
 public class TournamentJdbcDao implements TournamentDao {
@@ -40,6 +33,9 @@ public class TournamentJdbcDao implements TournamentDao {
       + "OR (:startDate IS NOT NULL AND :endDate IS NOT NULL AND start_date >= :startDate AND end_date <= :endDate)";
 
   private static final String SQL_LIMIT_CLAUSE = " LIMIT :limit";
+
+  private static final String SQL_CREATE_TOURNAMENT = "INSERT INTO " + TABLE_NAME + " (name, start_date, end_date) VALUES (:name, :startDate, :endDate)";
+  private static final String SQL_CREATE_PARTICIPANT = "INSERT INTO tournament_participant (tournament_id, horse_id, entry_number) VALUES (?, ?, ?)";
 
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
@@ -62,6 +58,29 @@ public class TournamentJdbcDao implements TournamentDao {
     var params = new BeanPropertySqlParameterSource(searchParameters);
 
     return jdbcNamed.query(query, params, this::mapRow);
+  }
+
+  @Override
+  public Tournament create(TournamentDetailDto toCreate) throws ConflictException {
+    LOG.trace("create({})", toCreate);
+    var tournament = new Tournament()
+        .setName(toCreate.name())
+        .setStartDate(toCreate.startDate())
+        .setEndDate(toCreate.endDate());
+    var keyHolder = new GeneratedKeyHolder();
+    var x = jdbcNamed.update(SQL_CREATE_TOURNAMENT, new BeanPropertySqlParameterSource(tournament), keyHolder);
+    var id = keyHolder.getKey().longValue();
+
+    tournament.setId(id);
+
+    for (var participant : toCreate.participants()) {
+      jdbcTemplate.update(SQL_CREATE_PARTICIPANT,
+          id,
+          participant.horseId(),
+          participant.entryNumber());
+    }
+    LOG.debug("tournament: {}", x);
+    return tournament;
   }
 
 

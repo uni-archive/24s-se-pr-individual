@@ -1,12 +1,10 @@
 package at.ac.tuwien.sepr.assignment.individual.service;
 
-import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
-import at.ac.tuwien.sepr.assignment.individual.dto.HorseListDto;
-import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
-import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
 
 import java.util.stream.Stream;
@@ -23,5 +21,15 @@ public interface TournamentService {
    * @return the tournaments where the given fields match.
    */
   Stream<TournamentListDto> search(TournamentSearchDto searchParameters);
+
+  /**
+   * Create a new tournament in the persistent data store.
+   *
+   * @param toCreate the tournament to create.
+   * @return the created tournament.
+   * @throws ValidationException if the tournament data is invalid.
+   * @throws ConflictException if the tournament already exists.
+   */
+  TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException;
 
 }

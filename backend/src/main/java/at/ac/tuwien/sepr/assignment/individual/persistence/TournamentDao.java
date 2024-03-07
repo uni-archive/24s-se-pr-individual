@@ -1,7 +1,9 @@
 package at.ac.tuwien.sepr.assignment.individual.persistence;
 
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
+import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 
 import java.util.Collection;
 
@@ -20,4 +22,12 @@ public interface TournamentDao {
    * @return the tournaments where all given parameters match.
    */
   Collection<Tournament> search(TournamentSearchDto searchParameters);
+
+  /**
+   * Create a new tournament in the persistent data store.
+   *
+   * @param toCreate the tournament to create.
+   * @return the created tournament.
+   */
+  Tournament create(TournamentDetailDto toCreate) throws ConflictException;
 }

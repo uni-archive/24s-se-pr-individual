@@ -8,6 +8,7 @@ import {
   TournamentListDto,
   TournamentSearchParams,
 } from "../dto/tournament";
+import {Horse} from "../dto/horse";
 const baseUri = environment.backendUrl + '/tournaments';
 
 class ErrorDto {
@@ -25,8 +26,10 @@ export class TournamentService {
 
 
   public create(tournament: TournamentCreateDto): Observable<TournamentDetailDto> {
-    // TODO this is not implemented yet!
-    return throwError(() => ({message: "Not implemented yet"}));
+    return this.http.post<TournamentDetailDto>(
+      baseUri,
+      tournament
+    );
   }
 
   /**

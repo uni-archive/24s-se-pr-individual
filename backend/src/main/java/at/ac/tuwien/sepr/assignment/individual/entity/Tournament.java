@@ -1,9 +1,6 @@
 package at.ac.tuwien.sepr.assignment.individual.entity;
 
-import at.ac.tuwien.sepr.assignment.individual.type.Sex;
-
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Represents a tournament in the persistent data store.
@@ -15,7 +12,6 @@ public class Tournament {
 
   private LocalDate endDate;
 
-  private List<Long> horseIds;
 
   public Long getId() {
     return id;
@@ -53,15 +49,6 @@ public class Tournament {
     return this;
   }
 
-  public List<Long> getHorseIds() {
-    return horseIds;
-  }
-
-  public Tournament setHorseIds(List<Long> horseIds) {
-    this.horseIds = horseIds;
-    return this;
-  }
-
   @Override
   public String toString() {
     return "Tournament{"
@@ -69,7 +56,6 @@ public class Tournament {
         + ", name='" + name + '\''
         + ", startDate=" + startDate
         + ", endDate=" + endDate
-        + ", horseIds=" + horseIds
         + '}';
   }
 }
