@@ -19,10 +19,11 @@ Vergessen Sie nicht im Projekt ihren Namen und Matrikelnummer zu ersetzen.
 | 06.03. | 23h10     | 20m   | US3      | implemented horse delete, todo: check if in tournament                    |
 | 07.03. | 13h       | 1h20m | US5      | implemented tournament search & sql create statements                     |
 | 07.03. | 18h10     | 1h10  | US6      | implemented parts of tournament creation, should work now for detail view |
-|        |           |       |          |                                                                           |
-|        |           |       |          |                                                                           |
+|        | 22h47     | 1h    |          |                                                                           |
+| 05.04. | 11h33     |       |          |                                                                           |
 
 **Gesamtsumme der Zeit**: 6h 
 
-// TODO\
-horse edit error handling?
+### TODO:
+* horse edit error handling?
+* return detail of tournament after creation properly

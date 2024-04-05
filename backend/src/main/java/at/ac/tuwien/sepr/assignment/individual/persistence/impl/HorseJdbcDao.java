@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.assignment.individual.persistence.impl;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.entity.Breed;
 import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
@@ -15,6 +16,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +66,10 @@ public class HorseJdbcDao implements HorseDao {
   private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME
       + " WHERE id = ?";
 
+  private static final String SQL_FIND_BY_IDS =
+      "SELECT * FROM " + TABLE_NAME
+          + " WHERE id IN (:ids)";
+
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
 
@@ -104,6 +111,12 @@ public class HorseJdbcDao implements HorseDao {
     return jdbcNamed.query(query, params, this::mapRow);
   }
 
+  @Override
+  public Collection<Horse> findHorsesById(Set<Long> horseIds) {
+    LOG.trace("findHorsesById({})", horseIds);
+    return jdbcNamed.query(SQL_FIND_BY_IDS, Map.of("ids", horseIds), this::mapRow);
+  }
+
 
   @Override
   public Horse update(HorseDetailDto horse) throws NotFoundException {
@@ -134,7 +147,6 @@ public class HorseJdbcDao implements HorseDao {
     return h;
   }
 
-  //
   @Override
   public Horse create(HorseDetailDto horse) {
     LOG.trace("create({})", horse);

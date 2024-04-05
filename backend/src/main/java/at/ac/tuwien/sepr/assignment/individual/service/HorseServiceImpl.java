@@ -90,6 +90,24 @@ public class HorseServiceImpl implements HorseService {
     return mapper.entityToDetailDto(horse, breeds);
   }
 
+  @Override
+  public Stream<HorseDetailDto> findHorsesByIds(Set<Long> horseIds) {
+    LOG.trace("findBreedsByIds({})", horseIds);
+
+    var horses = dao.findHorsesById(horseIds);
+    // First get all breed ids…
+    var breeds = horses.stream()
+        .map(Horse::getBreedId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toUnmodifiableSet());
+    // … then get the breeds all at once.
+    var breedsPerId = breedMapForHorses(breeds);
+
+    return horses
+        .stream()
+        .map(horse -> mapper.entityToDetailDto(horse, breedsPerId));
+  }
+
   private Map<Long, BreedDto> breedMapForSingleHorse(Horse horse) {
     return breedMapForHorses(Collections.singleton(horse.getBreedId()));
   }

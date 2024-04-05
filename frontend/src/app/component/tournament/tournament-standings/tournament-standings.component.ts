@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {TournamentStandingsDto} from "../../../dto/tournament";
+import {TournamentDetailDto, TournamentStandingsDto} from "../../../dto/tournament";
 import {TournamentService} from "../../../service/tournament.service";
 import {ActivatedRoute} from "@angular/router";
 import {NgForm} from "@angular/forms";
@@ -14,6 +14,7 @@ import {ErrorFormatterService} from "../../../service/error-formatter.service";
 })
 export class TournamentStandingsComponent implements OnInit {
   standings: TournamentStandingsDto | undefined;
+  tournament: TournamentDetailDto | undefined;
 
   public constructor(
     private service: TournamentService,
@@ -25,7 +26,30 @@ export class TournamentStandingsComponent implements OnInit {
   }
 
   public ngOnInit() {
-    // TODO to be implemented.
+    this.route.params.subscribe(params => {
+      const id = Number(params.id);
+      if (id) {
+        this.service.getById(id).subscribe({
+          next: tournament => {
+            this.tournament = tournament;
+          },
+          error: error => {
+            console.error('Error loading tournament', error);
+            // TODO show an error message to the user. Include and sensibly present the info from the backend!
+          }
+        });
+
+        this.service.getStandingsById(id).subscribe({
+          next: standings => {
+            this.standings = standings;
+          },
+          error: error => {
+            console.error('Error loading standings', error);
+            // TODO show an error message to the user. Include and sensibly present the info from the backend!
+          }
+        });
+      }
+    });
   }
 
   public submit(form: NgForm) {
@@ -36,5 +60,7 @@ export class TournamentStandingsComponent implements OnInit {
     if (!this.standings)
       return;
     // TODO implement
+    console.log("test")
   }
 }
+8+4+2+1

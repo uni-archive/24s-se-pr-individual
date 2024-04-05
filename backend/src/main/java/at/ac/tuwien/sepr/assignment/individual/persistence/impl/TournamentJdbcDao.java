@@ -1,9 +1,17 @@
 package at.ac.tuwien.sepr.assignment.individual.persistence.impl;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailParticipantDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
+import at.ac.tuwien.sepr.assignment.individual.entity.BranchPosition;
+import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentTree;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
+import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
+import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.persistence.TournamentDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +19,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.lang.invoke.MethodHandles;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Repository
 public class TournamentJdbcDao implements TournamentDao {
@@ -36,6 +50,8 @@ public class TournamentJdbcDao implements TournamentDao {
 
   private static final String SQL_CREATE_TOURNAMENT = "INSERT INTO " + TABLE_NAME + " (name, start_date, end_date) VALUES (:name, :startDate, :endDate)";
   private static final String SQL_CREATE_PARTICIPANT = "INSERT INTO tournament_participant (tournament_id, horse_id, entry_number) VALUES (?, ?, ?)";
+  private static final String SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID = "SELECT * FROM tournament_participant WHERE tournament_id = ?";
+  private static final String SQL_CREATE_TOURNAMENT_TREE = "INSERT INTO tournament_tree (tournament_id, participant_id, parent_id, branch_position) VALUES (?, NULL, ?, ?)";
 
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
@@ -79,8 +95,89 @@ public class TournamentJdbcDao implements TournamentDao {
           participant.horseId(),
           participant.entryNumber());
     }
+
+    createTree(id);
+
     LOG.debug("tournament: {}", x);
     return tournament;
+  }
+
+
+  private void createTree(Long tournamentId) {
+    LOG.trace("createTree({})", tournamentId);
+    createTreeBranch(tournamentId, null, BranchPosition.FINAL_WINNER, 4);
+  }
+
+  // todo javadoc
+  private void createTreeBranch(Long tournamentId, Long parentId, BranchPosition branchPosition, int remaining) {
+    if (remaining <= 0)
+      return;
+
+    KeyHolder keyHolder = new GeneratedKeyHolder();
+
+    jdbcTemplate.update(
+        connection -> {
+          PreparedStatement ps = connection.prepareStatement(SQL_CREATE_TOURNAMENT_TREE, new String[] {"id"});
+          ps.setLong(1, tournamentId);
+          if (parentId != null)
+            ps.setLong(2, parentId);
+          else
+            ps.setNull(2, Types.BIGINT);
+          ps.setString(3, branchPosition.toString());
+          return ps;
+        },
+        keyHolder);
+    var id = keyHolder.getKey().longValue();
+
+    createTreeBranch(tournamentId, id, BranchPosition.UPPER, remaining - 1);
+    createTreeBranch(tournamentId, id, BranchPosition.LOWER, remaining - 1);
+  }
+
+  @Override
+  public Tournament getById(long id) throws NotFoundException {
+    LOG.trace("getById({})", id);
+    List<Tournament> tournaments;
+    tournaments = jdbcTemplate.query(SQL_SELECT_BY_ID, this::mapRow, id);
+
+    if (tournaments.isEmpty()) {
+      throw new NotFoundException("No tournament with ID %d found".formatted(id));
+    }
+    if (tournaments.size() > 1) {
+      // This should never happen!!
+      throw new FatalException("Too many tournaments with ID %d found".formatted(id));
+    }
+
+    return tournaments.get(0);
+  }
+
+  @Override
+  public Collection<TournamentParticipant> getParticipantsByTournamentId(long id) {
+    LOG.trace("getParticipantsByTournamentId({})", id);
+    return jdbcTemplate.query(SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID, this::mapParticipantRow, id);
+  }
+
+//  @Override
+//  public Collection<TournamentTree> getBranchesByTournamentId(long id) throws NotFoundException {
+//    LOG.trace("getStandingsById({})", id);
+//    var tournament = getById(id);
+//    List<TournamentTree> participants = getParticipants(id);
+//
+//
+//    return new TournamentStandingsDto(
+//        tournament.getId(),
+//        tournament.getName(),
+//        participants,
+//        null); // todo implement tree
+//  }
+
+  private TournamentParticipant mapParticipantRow(ResultSet result, int rownum) throws SQLException {
+    return new TournamentParticipant()
+        .setId(result.getLong("id"))
+        .setTournamentId(result.getLong("tournament_id"))
+        .setHorseId(result.getLong("horse_id"))
+        .setEntryNumber(result.getInt("entry_number"))
+        .setRoundReached(result.getInt("round_reached"))
+        ;
   }
 
 

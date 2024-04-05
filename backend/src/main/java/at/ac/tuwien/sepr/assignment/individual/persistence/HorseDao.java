@@ -2,11 +2,13 @@ package at.ac.tuwien.sepr.assignment.individual.persistence;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.entity.Breed;
 import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Data Access Object for horses.
@@ -63,4 +65,7 @@ public interface HorseDao {
    * @throws ConflictException if the Horse is already part of a tournament
    */
   Horse deleteById(long id) throws NotFoundException, ConflictException;
+
+  // TODO comment
+  Collection<Horse> findHorsesById(Set<Long> horseIds);
 }

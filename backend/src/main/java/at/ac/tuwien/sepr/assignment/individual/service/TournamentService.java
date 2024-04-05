@@ -4,7 +4,9 @@ import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
+import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
 
 import java.util.stream.Stream;
@@ -32,4 +34,21 @@ public interface TournamentService {
    */
   TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException;
 
+//  /**
+//   * Get the standings of a tournament from the persistent data store.
+//   *
+//   * @param id the id of the tournament to get.
+//   * @return the standings of the tournament.
+//   * @throws NotFoundException if the tournament does not exist.
+//   */
+//  TournamentStandingsDto getStandingsById(long id) throws NotFoundException;
+
+  /**
+   * Get the details of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   * @return the details of the tournament.
+   * @throws NotFoundException if the tournament does not exist.
+   */
+  TournamentDetailDto getById(long id) throws NotFoundException;
 }

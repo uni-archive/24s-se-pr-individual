@@ -2,8 +2,11 @@ package at.ac.tuwien.sepr.assignment.individual.persistence;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
+import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 
 import java.util.Collection;
 
@@ -30,4 +33,29 @@ public interface TournamentDao {
    * @return the created tournament.
    */
   Tournament create(TournamentDetailDto toCreate) throws ConflictException;
+
+  /**
+   * Get the details of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   * @return the details of the tournament.
+   */
+  Tournament getById(long id) throws NotFoundException;
+
+  /**
+   * Get the participants of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   * @return the participants of the tournament.
+   */
+  Collection<TournamentParticipant> getParticipantsByTournamentId(long id);
+
+//
+//  /**
+//   * Get the standings of a tournament from the persistent data store.
+//   *
+//   * @param id the id of the tournament to get.
+//   * @return the standings of the tournament.
+//   */
+//  TournamentStandingsDto getStandingsById(long id) throws NotFoundException;
 }

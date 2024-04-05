@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepr.assignment.individual.service;
 
+import at.ac.tuwien.sepr.assignment.individual.dto.BreedDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
@@ -7,6 +8,7 @@ import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -65,4 +67,13 @@ public interface HorseService {
    * @throws ConflictException if the horse is part of a tournament
    */
   HorseDetailDto deleteById(long id) throws NotFoundException, ConflictException;
+
+  /**
+   * Retrieve all stored horses, that have one of the given IDs.
+   * Note that if for one ID no horse is found, this method does not throw an error.
+   *
+   * @param horseIds the set of IDs to find horses for.
+   * @return a stream of all found horses with an ID in {@code horseIds}
+   */
+  Stream<HorseDetailDto> findHorsesByIds(Set<Long> horseIds);
 }

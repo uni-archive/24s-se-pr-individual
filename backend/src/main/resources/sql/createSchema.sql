@@ -34,9 +34,11 @@ CREATE TABLE IF NOT EXISTS tournament_participant
   round_reached INT DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS tournament_trees (
+DROP TABLE IF EXISTS tournament_tree;
+CREATE TABLE IF NOT EXISTS tournament_tree (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  tournament_id BIGINT REFERENCES tournament(id),
-  participant_id BIGINT REFERENCES tournament_participant(id),
-  parent_id BIGINT REFERENCES tournament_trees(id)
+  tournament_id BIGINT REFERENCES tournament(id) NOT NULL,
+  participant_id BIGINT REFERENCES tournament_participant(id) NULL,
+  parent_id BIGINT REFERENCES tournament_tree(id) NULL,
+  branch_position ENUM ('FINAL_WINNER', 'UPPER', 'LOWER') NOT NULL
 );

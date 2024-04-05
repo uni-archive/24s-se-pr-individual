@@ -6,7 +6,7 @@ import {formatIsoDate} from '../util/date-helper';
 import {
   TournamentCreateDto, TournamentDetailDto,
   TournamentListDto,
-  TournamentSearchParams,
+  TournamentSearchParams, TournamentStandingsDto,
 } from "../dto/tournament";
 import {Horse} from "../dto/horse";
 const baseUri = environment.backendUrl + '/tournaments';
@@ -59,6 +59,24 @@ export class TournamentService {
         t.startDate = new Date(t.startDate); // Parse date string
         t.endDate = new Date(t.endDate); // Parse date string
       })));
+  }
+
+  /**
+   * Get a single tournament by its id.
+   * @param id the id of the tournament to get
+   * @return an Observable for the tournament
+   */
+  public getById(id: number): Observable<TournamentDetailDto> {
+    return this.http.get<TournamentDetailDto>(`${baseUri}/${id}`);
+  }
+
+  /**
+   * Get a single tournament by its id.
+   * @param id the id of the tournament to get
+   * @return an Observable for the tournament
+   */
+  public getStandingsById(id: number): Observable<TournamentStandingsDto> {
+    return this.http.get<TournamentStandingsDto>(`${baseUri}/${id}/standings`);
   }
 
 }
