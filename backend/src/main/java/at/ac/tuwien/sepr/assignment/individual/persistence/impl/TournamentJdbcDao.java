@@ -52,6 +52,7 @@ public class TournamentJdbcDao implements TournamentDao {
   private static final String SQL_CREATE_PARTICIPANT = "INSERT INTO tournament_participant (tournament_id, horse_id, entry_number) VALUES (?, ?, ?)";
   private static final String SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID = "SELECT * FROM tournament_participant WHERE tournament_id = ?";
   private static final String SQL_CREATE_TOURNAMENT_TREE = "INSERT INTO tournament_tree (tournament_id, participant_id, parent_id, branch_position) VALUES (?, NULL, ?, ?)";
+  private static final String SQL_FIND_BRANCHES_BY_TOURNAMENT_ID = "SELECT * FROM tournament_tree WHERE tournament_id = ?";
 
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
@@ -156,19 +157,11 @@ public class TournamentJdbcDao implements TournamentDao {
     return jdbcTemplate.query(SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID, this::mapParticipantRow, id);
   }
 
-//  @Override
-//  public Collection<TournamentTree> getBranchesByTournamentId(long id) throws NotFoundException {
-//    LOG.trace("getStandingsById({})", id);
-//    var tournament = getById(id);
-//    List<TournamentTree> participants = getParticipants(id);
-//
-//
-//    return new TournamentStandingsDto(
-//        tournament.getId(),
-//        tournament.getName(),
-//        participants,
-//        null); // todo implement tree
-//  }
+  @Override
+  public Collection<TournamentTree> getBranchesByTournamentId(long id) {
+    LOG.trace("getStandingsById({})", id);
+    return jdbcTemplate.query(SQL_FIND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
+  }
 
   private TournamentParticipant mapParticipantRow(ResultSet result, int rownum) throws SQLException {
     return new TournamentParticipant()
@@ -177,6 +170,16 @@ public class TournamentJdbcDao implements TournamentDao {
         .setHorseId(result.getLong("horse_id"))
         .setEntryNumber(result.getInt("entry_number"))
         .setRoundReached(result.getInt("round_reached"))
+        ;
+  }
+
+  private TournamentTree mapBranchRow(ResultSet result, int rownum) throws SQLException {
+    return new TournamentTree()
+        .setId(result.getLong("id"))
+        .setTournamentId(result.getLong("tournament_id"))
+        .setParticipantId(result.getLong("participant_id"))
+        .setParentId(result.getLong("parent_id"))
+        .setBranchPosition(BranchPosition.valueOf(result.getString("branch_position")))
         ;
   }
 

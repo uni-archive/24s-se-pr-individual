@@ -42,6 +42,7 @@ export class TournamentStandingsComponent implements OnInit {
         this.service.getStandingsById(id).subscribe({
           next: standings => {
             this.standings = standings;
+            console.log(standings)
           },
           error: error => {
             console.error('Error loading standings', error);
@@ -63,4 +64,3 @@ export class TournamentStandingsComponent implements OnInit {
     console.log("test")
   }
 }
-8+4+2+1

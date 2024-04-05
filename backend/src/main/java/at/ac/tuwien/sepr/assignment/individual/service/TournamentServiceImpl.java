@@ -4,6 +4,7 @@ import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailParticipantDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
@@ -52,12 +53,26 @@ public class TournamentServiceImpl implements TournamentService {
     return null; // todo CHANGE THIS
   }
 
-//  @Override
-//  public TournamentStandingsDto getStandingsById(long id) throws NotFoundException {
-//    LOG.info("Getting tournament with id {}", id);
-//    var tournamentStandings = dao.getStandingsById(id);
-//    return tournamentStandings;
-//  }
+  @Override
+  public TournamentStandingsDto getStandingsById(long id) throws NotFoundException {
+    LOG.info("Getting tournament standings with tournament id {}", id);
+    var tournament = dao.getById(id);
+    var branches = dao.getBranchesByTournamentId(id);
+    var participantEntities = dao.getParticipantsByTournamentId(id);
+    var horseMap = horseService.findHorsesByIds(
+            participantEntities.stream().map(TournamentParticipant::getHorseId).collect(Collectors.toSet()))
+        .collect(Collectors.toMap(HorseDetailDto::id, Function.identity()));
+    var participants = participantEntities.stream().map(p -> mapper.participantToDetailDto(p, horseMap)).collect(Collectors.toList());
+
+    var standingsTree = mapper.branchesToStandingsTree(branches, participants.stream().collect(Collectors.toMap(TournamentDetailParticipantDto::horseId, Function.identity())));
+
+    return new TournamentStandingsDto(
+        id,
+        tournament.getName(),
+        participants,
+        standingsTree
+    );
+  }
 
   @Override
   public TournamentDetailDto getById(long id) throws NotFoundException {

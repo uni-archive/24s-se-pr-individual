@@ -3,7 +3,7 @@
      [class.align-items-start]="isLowerHalf"
      [class.align-items-center]="isFinalWinner">
 
-  <div class="d-flex flex-column me-3" *ngIf="treeBranch?.branches">
+  <div class="d-flex flex-column me-3" *ngIf="treeBranch?.branches && treeBranch?.branches?.length > 0">
     <!-- Earlier round(s) -->
     <div class="pt-3">
       <app-tournament-standings-branch

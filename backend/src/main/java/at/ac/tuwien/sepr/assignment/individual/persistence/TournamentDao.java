@@ -5,6 +5,7 @@ import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentTree;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 
@@ -50,12 +51,12 @@ public interface TournamentDao {
    */
   Collection<TournamentParticipant> getParticipantsByTournamentId(long id);
 
-//
-//  /**
-//   * Get the standings of a tournament from the persistent data store.
-//   *
-//   * @param id the id of the tournament to get.
-//   * @return the standings of the tournament.
-//   */
-//  TournamentStandingsDto getStandingsById(long id) throws NotFoundException;
+
+  /**
+   * Get the standing branches of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   * @return the standing branches of the tournament.
+   */
+  Collection<TournamentTree> getBranchesByTournamentId(long id);
 }

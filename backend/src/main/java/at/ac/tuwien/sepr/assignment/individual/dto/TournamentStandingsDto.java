@@ -6,6 +6,6 @@ public record TournamentStandingsDto(
     Long id,
     String name,
     List<TournamentDetailParticipantDto> participants,
-    TournamentStandingsDto tree
+    TournamentStandingsTreeDto tree
 ) {
 }

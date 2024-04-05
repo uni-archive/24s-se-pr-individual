@@ -76,7 +76,10 @@ export class TournamentService {
    * @return an Observable for the tournament
    */
   public getStandingsById(id: number): Observable<TournamentStandingsDto> {
-    return this.http.get<TournamentStandingsDto>(`${baseUri}/${id}/standings`);
+    return this.http.get<TournamentStandingsDto>(`${baseUri}/${id}/standings`)
+      .pipe(tap(standings => standings.participants.map(h => {
+      h.dateOfBirth = new Date(h.dateOfBirth); // Parse date string
+    })));
   }
 
 }

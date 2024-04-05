@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS horse
 );
 
 CREATE TABLE IF NOT EXISTS tournament
-(
+( 
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   start_date DATE NOT NULL,
@@ -34,11 +34,10 @@ CREATE TABLE IF NOT EXISTS tournament_participant
   round_reached INT DEFAULT 0
 );
 
-DROP TABLE IF EXISTS tournament_tree;
 CREATE TABLE IF NOT EXISTS tournament_tree (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   tournament_id BIGINT REFERENCES tournament(id) NOT NULL,
   participant_id BIGINT REFERENCES tournament_participant(id) NULL,
-  parent_id BIGINT REFERENCES tournament_tree(id) NULL,
+  parent_id BIGINT REFERENCES tournament_tree(id) ON DELETE SET NULL,
   branch_position ENUM ('FINAL_WINNER', 'UPPER', 'LOWER') NOT NULL
 );

@@ -7,19 +7,26 @@ import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailParticipantDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsTreeDto;
+import at.ac.tuwien.sepr.assignment.individual.entity.BranchPosition;
 import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentTree;
 import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class TournamentMapper {
@@ -92,6 +99,7 @@ public class TournamentMapper {
     );
   }
 
+  // todo javadocs
   private HorseDetailDto horseFromMap(TournamentParticipant participant, Map<Long, HorseDetailDto> map) {
     var horseId = participant.getHorseId();
     if (horseId == null) {
@@ -125,5 +133,51 @@ public class TournamentMapper {
         createDto.endDate(),
         participants
     );
+  }
+
+  /**
+   * Convert a tournament participant entity object to a {@link TournamentDetailParticipantDto}.
+   * The given map of horses needs to contain the breed of {@code horse}.
+   *
+   * @param participant the participant to convert
+   * @param horses a map of horses identified by their id, required for mapping participants
+   * @return the converted {@link TournamentDetailParticipantDto}
+   */
+  public TournamentStandingsTreeDto branchesToStandingsTree(Collection<TournamentTree> branches, Map<Long, TournamentDetailParticipantDto> participants) {
+    LOG.trace("branchesToStandingsTree({}, {})", branches, participants);
+    var branchesMap = branches.stream().collect(Collectors.toMap(TournamentTree::getId, Function.identity()));
+    LOG.info("test: {} ", branches);
+    var rootEntity = branches.stream().filter(t -> t.getParentId() == 0).findFirst().get();
+    var rootDto = findBranches(null, rootEntity.getId(), branchesMap, participants, 4);
+
+    return rootDto;
+  }
+
+  private TournamentStandingsTreeDto findBranches(TournamentStandingsTreeDto lastDto, Long currentId, Map<Long, TournamentTree> branches, Map<Long, TournamentDetailParticipantDto> participants, int remainingDepth) {
+    if (remainingDepth == 0)
+      return null;
+    TournamentTree currentBranch = branches.get(currentId);
+
+    TournamentDetailParticipantDto currentParticipant = null;
+    List<TournamentStandingsTreeDto> currentBranches = null;
+
+    if (currentBranch.getParticipantId() != null) {
+      currentParticipant = participants.get(currentBranch.getParticipantId());
+    }
+    if (remainingDepth > 1) {
+      currentBranches = new ArrayList<>();
+    }
+
+    var currentDto = new TournamentStandingsTreeDto(currentParticipant, currentBranches);
+
+    switch (currentBranch.getBranchPosition()) {
+      case UPPER -> lastDto.branches().add(0, currentDto);
+      case LOWER -> lastDto.branches().add(1, currentDto);
+    }
+
+    branches.values().stream().filter(b -> Objects.equals(b.getParentId(), currentId))
+        .forEach(b -> findBranches(currentDto, b.getId(), branches, participants, remainingDepth - 1));
+
+    return currentDto;
   }
 }

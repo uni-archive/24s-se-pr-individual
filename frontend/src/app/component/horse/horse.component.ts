@@ -49,6 +49,7 @@ export class HorseComponent implements OnInit {
       .subscribe({
         next: data => {
           this.horses = data;
+          console.log(data)
         },
         error: error => {
           console.error('Error fetching horses', error);

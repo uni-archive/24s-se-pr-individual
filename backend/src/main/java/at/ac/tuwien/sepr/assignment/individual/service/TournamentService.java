@@ -34,14 +34,14 @@ public interface TournamentService {
    */
   TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException;
 
-//  /**
-//   * Get the standings of a tournament from the persistent data store.
-//   *
-//   * @param id the id of the tournament to get.
-//   * @return the standings of the tournament.
-//   * @throws NotFoundException if the tournament does not exist.
-//   */
-//  TournamentStandingsDto getStandingsById(long id) throws NotFoundException;
+  /**
+   * Get the standings of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   * @return the standings of the tournament.
+   * @throws NotFoundException if the tournament does not exist.
+   */
+  TournamentStandingsDto getStandingsById(long id) throws NotFoundException;
 
   /**
    * Get the details of a tournament from the persistent data store.

@@ -62,18 +62,18 @@ public class TournamentEndpoint {
     }
   }
 
-//  @GetMapping("{id}/standings")
-//  public TournamentStandingsDto getStandingsById(@PathVariable("id") long id) {
-//    LOG.info("GET " + BASE_PATH + "/{}", id);
-//    try {
-//      LOG.debug("TournamentEndpoint.getStandingsById");
-//      return service.getStandingsById(id);
-//    } catch (NotFoundException e) {
-//      HttpStatus status = HttpStatus.NOT_FOUND;
-//      logClientError(status, "Tournament to get standings of not found", e);
-//      throw new ResponseStatusException(status, e.getMessage(), e);
-//    }
-//  }
+  @GetMapping("{id}/standings")
+  public TournamentStandingsDto getStandingsById(@PathVariable("id") long id) {
+    LOG.info("GET " + BASE_PATH + "/{}/standings", id);
+    try {
+      LOG.debug("TournamentEndpoint.getStandingsById");
+      return service.getStandingsById(id);
+    } catch (NotFoundException e) {
+      HttpStatus status = HttpStatus.NOT_FOUND;
+      logClientError(status, "Tournament to get standings of not found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    }
+  }
 
   @GetMapping("{id}")
   public TournamentDetailDto getById(@PathVariable("id") long id) {
@@ -83,7 +83,7 @@ public class TournamentEndpoint {
       return service.getById(id);
     } catch (NotFoundException e) {
       HttpStatus status = HttpStatus.NOT_FOUND;
-      logClientError(status, "Tournament to get standings of not found", e);
+      logClientError(status, "Tournament to get details of not found", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }
