@@ -39,6 +39,7 @@ export interface TournamentDetailParticipantDto {
 
 export interface TournamentStandingsTreeDto {
   thisParticipant: TournamentDetailParticipantDto | null;
+  isLocked: boolean | undefined;
   branches?: TournamentStandingsTreeDto[];
 }
 

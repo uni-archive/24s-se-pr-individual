@@ -1,6 +1,7 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ViewChild} from '@angular/core';
 import {TournamentDetailParticipantDto, TournamentStandingsTreeDto} from "../../../../dto/tournament";
 import {of} from "rxjs";
+import {AutocompleteComponent} from "../../../autocomplete/autocomplete.component";
 
 enum TournamentBranchPosition {
   FINAL_WINNER,
@@ -31,6 +32,16 @@ export class TournamentStandingsBranchComponent {
     return this.branchPosition === TournamentBranchPosition.FINAL_WINNER;
   }
 
+  get isFilledIn(): boolean {
+    return !!this.treeBranch?.thisParticipant;
+  }
+
+  get previousAreFilledIn(): boolean {
+    if (this.treeBranch?.branches === null)
+      return true;
+    return !! this.treeBranch?.branches?.reduce((acc, b) => !! b.thisParticipant && acc, true);
+  }
+
   suggestions = (input: string) => {
     // The candidates are either the participants of the previous round matches in this branch
     // or, if this is the first round, all participant horses
@@ -44,6 +55,15 @@ export class TournamentStandingsBranchComponent {
             x.name.toUpperCase().match(new RegExp(`.*${input.toUpperCase()}.*`)));
     return of(results);
   };
+
+  onParticipantChange() {
+    console.log("onchange")
+    if (this.treeBranch?.thisParticipant !== null) {
+      this.treeBranch?.branches?.forEach(b => b.isLocked = true);
+    } else {
+      this.treeBranch?.branches?.forEach(b => b.isLocked = false);
+    }
+  }
 
   public formatParticipant(participant: TournamentDetailParticipantDto | null): string {
     return participant

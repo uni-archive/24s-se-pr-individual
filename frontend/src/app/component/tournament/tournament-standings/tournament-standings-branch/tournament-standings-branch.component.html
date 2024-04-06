@@ -24,8 +24,10 @@
   <app-autocomplete
     textInputClass="form-control"
     valueNeedsToMatchSuggestion="true"
+    [disabled]="! previousAreFilledIn || treeBranch.isLocked"
     [suggestions]="suggestions"
     [(ngModel)]="treeBranch.thisParticipant"
+    (change)="onParticipantChange()"
     [formatModel]="formatParticipant"
     ></app-autocomplete>
 </div>
