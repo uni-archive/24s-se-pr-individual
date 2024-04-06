@@ -10,6 +10,7 @@ import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Data Access Object for tournaments.
@@ -59,4 +60,12 @@ public interface TournamentDao {
    * @return the standing branches of the tournament.
    */
   Collection<TournamentTree> getBranchesByTournamentId(long id);
+
+
+  /** TODO
+   * Get the standing branches of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   */
+  void updateStandings(Collection<TournamentTree> branches);
 }

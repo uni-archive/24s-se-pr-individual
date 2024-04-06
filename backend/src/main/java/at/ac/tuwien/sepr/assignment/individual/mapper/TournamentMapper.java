@@ -1,15 +1,12 @@
 package at.ac.tuwien.sepr.assignment.individual.mapper;
 
-import at.ac.tuwien.sepr.assignment.individual.dto.BreedDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
-import at.ac.tuwien.sepr.assignment.individual.dto.HorseListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailParticipantDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsTreeDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.BranchPosition;
-import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentTree;
@@ -147,12 +144,13 @@ public class TournamentMapper {
     LOG.trace("branchesToStandingsTree({}, {})", branches, participants);
     var branchesMap = branches.stream().collect(Collectors.toMap(TournamentTree::getId, Function.identity()));
     LOG.info("test: {} ", branches);
-    var rootEntity = branches.stream().filter(t -> t.getParentId() == 0).findFirst().get();
+    var rootEntity = branches.stream().filter(t -> t.getBranchPosition().equals(BranchPosition.FINAL_WINNER)).findFirst().get();
     var rootDto = findBranches(null, rootEntity.getId(), branchesMap, participants, 4);
 
     return rootDto;
   }
 
+  // todo javadoc
   private TournamentStandingsTreeDto findBranches(TournamentStandingsTreeDto lastDto, Long currentId, Map<Long, TournamentTree> branches, Map<Long, TournamentDetailParticipantDto> participants, int remainingDepth) {
     if (remainingDepth == 0)
       return null;
@@ -162,7 +160,9 @@ public class TournamentMapper {
     List<TournamentStandingsTreeDto> currentBranches = null;
 
     if (currentBranch.getParticipantId() != null) {
+      LOG.info("{}", currentBranch.getParticipantId());
       currentParticipant = participants.get(currentBranch.getParticipantId());
+      LOG.info("{}", currentBranch.getParticipantId());
     }
     if (remainingDepth > 1) {
       currentBranches = new ArrayList<>();
@@ -179,5 +179,31 @@ public class TournamentMapper {
         .forEach(b -> findBranches(currentDto, b.getId(), branches, participants, remainingDepth - 1));
 
     return currentDto;
+  }
+
+  // todo javadoc
+  public Collection<TournamentTree> tournamentTreeToBranches(Long tournamentId, TournamentStandingsTreeDto treeDto, Collection<TournamentTree> branches, Collection<TournamentParticipant> participants) {
+    var root = branches.stream().filter(b -> b.getBranchPosition().equals(BranchPosition.FINAL_WINNER)).findFirst().get();
+    var participantMap = participants.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
+    root.setParticipantId(treeDto.thisParticipant() == null ? null : participantMap.get(treeDto.thisParticipant().horseId()).getId());
+    LOG.info("{}", treeDto);
+
+    recursiveParticipantUpdate(treeDto.branches().get(0), BranchPosition.UPPER, branches, root.getId(), participantMap);
+    recursiveParticipantUpdate(treeDto.branches().get(1), BranchPosition.LOWER, branches, root.getId(), participantMap);
+
+
+    return branches;
+  }
+
+  public void recursiveParticipantUpdate(TournamentStandingsTreeDto treeDto, BranchPosition pos, Collection<TournamentTree> branches, Long previousId, Map<Long, TournamentParticipant> participantMap) {
+    var current = branches.stream().filter(b -> Objects.equals(b.getParentId(), previousId) && b.getBranchPosition().equals(pos)).findFirst().get();
+    current.setParticipantId(treeDto.thisParticipant() == null ? null : participantMap.get(treeDto.thisParticipant().horseId()).getId());
+    LOG.info("{}, {}", current.getParticipantId(), treeDto.thisParticipant());
+
+    if (treeDto.branches() == null || treeDto.branches().size() != 2)
+      return;
+
+    recursiveParticipantUpdate(treeDto.branches().get(0), BranchPosition.UPPER, branches, current.getId(), participantMap);
+    recursiveParticipantUpdate(treeDto.branches().get(1), BranchPosition.LOWER, branches, current.getId(), participantMap);
   }
 }

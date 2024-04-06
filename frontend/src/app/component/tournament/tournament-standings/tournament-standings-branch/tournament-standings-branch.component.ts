@@ -47,7 +47,7 @@ export class TournamentStandingsBranchComponent {
 
   public formatParticipant(participant: TournamentDetailParticipantDto | null): string {
     return participant
-        ? `${participant.name} (${participant.dateOfBirth.toLocaleDateString()})`
+        ? `${participant.name} (${new Date(participant.dateOfBirth).toLocaleDateString()})`
         : "";
   }
 }

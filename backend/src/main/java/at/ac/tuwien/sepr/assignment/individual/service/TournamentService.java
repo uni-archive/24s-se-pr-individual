@@ -5,6 +5,7 @@ import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsTreeDto;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
@@ -51,4 +52,14 @@ public interface TournamentService {
    * @throws NotFoundException if the tournament does not exist.
    */
   TournamentDetailDto getById(long id) throws NotFoundException;
+
+  /** TODO
+   * Get the details of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   * @return the details of the tournament.
+   * @throws NotFoundException if the tournament does not exist.
+   * @throws ConflictException   if the data given for the horse is in conflict with the data currently in the system (breed does not exist, …)
+   */
+  TournamentStandingsTreeDto updateStandings(long tournamentId, TournamentStandingsTreeDto toUpdate) throws ValidationException, ConflictException, NotFoundException;
 }

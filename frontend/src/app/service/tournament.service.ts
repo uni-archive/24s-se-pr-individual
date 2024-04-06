@@ -6,7 +6,7 @@ import {formatIsoDate} from '../util/date-helper';
 import {
   TournamentCreateDto, TournamentDetailDto,
   TournamentListDto,
-  TournamentSearchParams, TournamentStandingsDto,
+  TournamentSearchParams, TournamentStandingsDto, TournamentStandingsTreeDto,
 } from "../dto/tournament";
 import {Horse} from "../dto/horse";
 const baseUri = environment.backendUrl + '/tournaments';
@@ -77,9 +77,20 @@ export class TournamentService {
    */
   public getStandingsById(id: number): Observable<TournamentStandingsDto> {
     return this.http.get<TournamentStandingsDto>(`${baseUri}/${id}/standings`)
-      .pipe(tap(standings => standings.participants.map(h => {
-      h.dateOfBirth = new Date(h.dateOfBirth); // Parse date string
-    })));
+      .pipe(tap(standings => {
+        standings.participants.map(h => {
+          h.dateOfBirth = new Date(h.dateOfBirth); // Parse date string
+        });
+      }));
+  }
+
+  /** todo javadoc
+   * Get a single tournament by its id.
+   * @param id the id of the tournament to get
+   * @return an Observable for the tournament
+   */
+  public updateStandingsTreeById(id: number, updatedStandings: TournamentStandingsTreeDto): Observable<TournamentStandingsTreeDto> {
+    return this.http.put<TournamentStandingsTreeDto>(`${baseUri}/${id}/standings`, updatedStandings);
   }
 
 }

@@ -15,6 +15,7 @@ import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.persistence.TournamentDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -53,7 +54,8 @@ public class TournamentJdbcDao implements TournamentDao {
   private static final String SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID = "SELECT * FROM tournament_participant WHERE tournament_id = ?";
   private static final String SQL_CREATE_TOURNAMENT_TREE = "INSERT INTO tournament_tree (tournament_id, participant_id, parent_id, branch_position) VALUES (?, NULL, ?, ?)";
   private static final String SQL_FIND_BRANCHES_BY_TOURNAMENT_ID = "SELECT * FROM tournament_tree WHERE tournament_id = ?";
-
+  private static final String SQL_UPDATE_BRANCHES = "UPDATE tournament_tree SET participant_id = ? WHERE id = ?";
+// (SELECT id FROM tournament_participant WHERE horse_id = ? AND tournament_id = ?)
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
 
@@ -161,6 +163,27 @@ public class TournamentJdbcDao implements TournamentDao {
   public Collection<TournamentTree> getBranchesByTournamentId(long id) {
     LOG.trace("getStandingsById({})", id);
     return jdbcTemplate.query(SQL_FIND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
+  }
+
+  @Override
+  public void updateStandings(Collection<TournamentTree> branches) {
+    var branchesList = new ArrayList<>(branches);
+    jdbcTemplate.batchUpdate(SQL_UPDATE_BRANCHES, new BatchPreparedStatementSetter() {
+      @Override
+      public void setValues(PreparedStatement ps, int i) throws SQLException {
+        var b = branchesList.get(i);
+        if (b.getParticipantId() == null)
+          ps.setNull(1, Types.BIGINT);
+        else
+          ps.setLong(1, b.getParticipantId());
+        ps.setLong(2, b.getId());
+      }
+
+      @Override
+      public int getBatchSize() {
+        return branchesList.size();
+      }
+    });
   }
 
   private TournamentParticipant mapParticipantRow(ResultSet result, int rownum) throws SQLException {

@@ -54,7 +54,14 @@ export class TournamentStandingsComponent implements OnInit {
   }
 
   public submit(form: NgForm) {
-    // TODO to be implemented.
+    //todo output
+    console.log(this.standings)
+    this.service.updateStandingsTreeById(this.tournament!.id, this.standings!.tree).subscribe({
+    error: error => {
+      console.error('Error loading standings', error);
+      // TODO show an error message to the user. Include and sensibly present the info from the backend!
+    }
+  });
   }
 
   public generateFirstRound() {
