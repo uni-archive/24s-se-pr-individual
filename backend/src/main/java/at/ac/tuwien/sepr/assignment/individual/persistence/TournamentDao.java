@@ -11,6 +11,7 @@ import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data Access Object for tournaments.
@@ -61,6 +62,14 @@ public interface TournamentDao {
    */
   Collection<TournamentTree> getBranchesByTournamentId(long id);
 
+  /**
+   * Get the standing branches of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   * @return the standing branches of the tournament.
+   */
+  Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id);
+
 
   /** TODO
    * Get the standing branches of a tournament from the persistent data store.
@@ -68,4 +77,20 @@ public interface TournamentDao {
    * @param id the id of the tournament to get.
    */
   void updateStandings(Collection<TournamentTree> branches);
+
+
+  /** TODO
+   * Get the standing branches of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   */
+  void updateParticipants(Collection<TournamentParticipant> participants);
+
+
+  /** TODO
+   * Get the standing branches of a tournament from the persistent data store.
+   *
+   * @param id the id of the tournament to get.
+   */
+  Collection<TournamentParticipant> getParticipationsForHorseIds(Collection<Long> horseIds);
 }

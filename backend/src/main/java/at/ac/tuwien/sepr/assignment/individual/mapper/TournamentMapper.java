@@ -18,10 +18,13 @@ import org.springframework.stereotype.Component;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -206,4 +209,29 @@ public class TournamentMapper {
     recursiveParticipantUpdate(treeDto.branches().get(0), BranchPosition.UPPER, branches, current.getId(), participantMap);
     recursiveParticipantUpdate(treeDto.branches().get(1), BranchPosition.LOWER, branches, current.getId(), participantMap);
   }
+
+  // todo javadoc
+  public Map<TournamentParticipant, Integer> determineRoundsReachedForParticipants(Collection<TournamentParticipant> participants, TournamentStandingsTreeDto tree) {
+    Map<TournamentParticipant, Integer> out = new HashMap<>();
+    Map<Long, TournamentParticipant> remainingParticipants = participants.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
+    recursiveDetermineRoundsReached(tree, 3, remainingParticipants, out);
+    return out;
+  }
+
+  private void recursiveDetermineRoundsReached(TournamentStandingsTreeDto tree, int points, Map<Long, TournamentParticipant> remainingParticipants, Map<TournamentParticipant, Integer> out) {
+    if (points == 0)
+      return;
+
+    if (tree.thisParticipant() != null && remainingParticipants.containsKey(tree.thisParticipant().horseId())) {
+      var participant = remainingParticipants.get(tree.thisParticipant().horseId());
+      out.put(participant, points);
+      remainingParticipants.remove(participant.getHorseId());
+    }
+
+    points--;
+
+    recursiveDetermineRoundsReached(tree.branches().get(0), points, remainingParticipants, out);
+    recursiveDetermineRoundsReached(tree.branches().get(1), points, remainingParticipants, out);
+  }
+
 }

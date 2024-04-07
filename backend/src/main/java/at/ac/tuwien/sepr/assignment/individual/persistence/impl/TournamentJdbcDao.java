@@ -1,11 +1,8 @@
 package at.ac.tuwien.sepr.assignment.individual.persistence.impl;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
-import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailParticipantDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
-import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.BranchPosition;
-import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentTree;
@@ -32,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
 public class TournamentJdbcDao implements TournamentDao {
@@ -52,9 +50,18 @@ public class TournamentJdbcDao implements TournamentDao {
   private static final String SQL_CREATE_TOURNAMENT = "INSERT INTO " + TABLE_NAME + " (name, start_date, end_date) VALUES (:name, :startDate, :endDate)";
   private static final String SQL_CREATE_PARTICIPANT = "INSERT INTO tournament_participant (tournament_id, horse_id, entry_number) VALUES (?, ?, ?)";
   private static final String SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID = "SELECT * FROM tournament_participant WHERE tournament_id = ?";
-  private static final String SQL_CREATE_TOURNAMENT_TREE = "INSERT INTO tournament_tree (tournament_id, participant_id, parent_id, branch_position) VALUES (?, NULL, ?, ?)";
+  private static final String SQL_CREATE_TOURNAMENT_TREE = "INSERT INTO tournament_tree (tournament_id, participant_id, parent_id, branch_position, first_round_index) VALUES (?, NULL, ?, ?, ?)";
   private static final String SQL_FIND_BRANCHES_BY_TOURNAMENT_ID = "SELECT * FROM tournament_tree WHERE tournament_id = ?";
+  private static final String SQL_FIND_FIRST_ROUND_BRANCHES_BY_TOURNAMENT_ID = "SELECT * FROM tournament_tree WHERE tournament_id = ? AND first_round_index IS NOT NULL";
   private static final String SQL_UPDATE_BRANCHES = "UPDATE tournament_tree SET participant_id = ? WHERE id = ?";
+  private static final String SQL_UPDATE_PARTICIPANTS = "UPDATE tournament_participant SET round_reached = ? WHERE id = ?";
+  private static final String SQL_FIND_PARTICIPANTS_BY_HORSE_IDS = "SELECT " +
+      "p.id AS id, p.tournament_id AS tournament_id, p.horse_id AS horse_id, p.entry_number AS entry_number, p.round_reached AS round_reached" +
+      " FROM tournament_participant AS p LEFT JOIN tournament AS t ON t.id = p.tournament_id WHERE p.horse_id IN (:ids) AND (" +
+      "start_date BETWEEN DATEADD('YEAR', -1, CURRENT_DATE) AND CURRENT_DATE OR " +
+      "end_date BETWEEN DATEADD('YEAR', -1, CURRENT_DATE) AND CURRENT_DATE OR " +
+      "(start_date <= DATEADD('YEAR', -1, CURRENT_DATE) AND end_date >= CURRENT_DATE)" +
+      ");";
 // (SELECT id FROM tournament_participant WHERE horse_id = ? AND tournament_id = ?)
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
@@ -108,11 +115,12 @@ public class TournamentJdbcDao implements TournamentDao {
 
   private void createTree(Long tournamentId) {
     LOG.trace("createTree({})", tournamentId);
-    createTreeBranch(tournamentId, null, BranchPosition.FINAL_WINNER, 4);
+    AtomicInteger firstRoundIndex = new AtomicInteger(0);
+    createTreeBranch(tournamentId, null, BranchPosition.FINAL_WINNER, 4, firstRoundIndex);
   }
 
   // todo javadoc
-  private void createTreeBranch(Long tournamentId, Long parentId, BranchPosition branchPosition, int remaining) {
+  private void createTreeBranch(Long tournamentId, Long parentId, BranchPosition branchPosition, int remaining, AtomicInteger firstRoundIndex) {
     if (remaining <= 0)
       return;
 
@@ -127,13 +135,18 @@ public class TournamentJdbcDao implements TournamentDao {
           else
             ps.setNull(2, Types.BIGINT);
           ps.setString(3, branchPosition.toString());
+          if (remaining == 1) {
+            ps.setInt(4, firstRoundIndex.getAndIncrement());
+          } else {
+            ps.setNull(4, Types.INTEGER);
+          }
           return ps;
         },
         keyHolder);
     var id = keyHolder.getKey().longValue();
 
-    createTreeBranch(tournamentId, id, BranchPosition.UPPER, remaining - 1);
-    createTreeBranch(tournamentId, id, BranchPosition.LOWER, remaining - 1);
+    createTreeBranch(tournamentId, id, BranchPosition.UPPER, remaining - 1, firstRoundIndex);
+    createTreeBranch(tournamentId, id, BranchPosition.LOWER, remaining - 1, firstRoundIndex);
   }
 
   @Override
@@ -166,6 +179,19 @@ public class TournamentJdbcDao implements TournamentDao {
   }
 
   @Override
+  public Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id) {
+    LOG.trace("getStandingsById({})", id);
+    return jdbcTemplate.query(SQL_FIND_FIRST_ROUND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
+  }
+
+  @Override
+  public Collection<TournamentParticipant> getParticipationsForHorseIds(Collection<Long> horseIds) {
+    LOG.trace("getParticipationsForHorseIds({})", horseIds);
+    LOG.info("{}", horseIds);
+    return jdbcNamed.query(SQL_FIND_PARTICIPANTS_BY_HORSE_IDS, Map.of("ids", horseIds), this::mapParticipantRow);
+  }
+
+  @Override
   public void updateStandings(Collection<TournamentTree> branches) {
     var branchesList = new ArrayList<>(branches);
     jdbcTemplate.batchUpdate(SQL_UPDATE_BRANCHES, new BatchPreparedStatementSetter() {
@@ -182,6 +208,24 @@ public class TournamentJdbcDao implements TournamentDao {
       @Override
       public int getBatchSize() {
         return branchesList.size();
+      }
+    });
+  }
+
+  @Override
+  public void updateParticipants(Collection<TournamentParticipant> participants) {
+    var participantsList = new ArrayList<>(participants);
+    jdbcTemplate.batchUpdate(SQL_UPDATE_PARTICIPANTS, new BatchPreparedStatementSetter() {
+      @Override
+      public void setValues(PreparedStatement ps, int i) throws SQLException {
+        var b = participantsList.get(i);
+        ps.setInt(1, b.getRoundReached());
+        ps.setLong(2, b.getId());
+      }
+
+      @Override
+      public int getBatchSize() {
+        return participantsList.size();
       }
     });
   }
@@ -203,7 +247,7 @@ public class TournamentJdbcDao implements TournamentDao {
         .setParticipantId(result.getLong("participant_id"))
         .setParentId(result.getLong("parent_id"))
         .setBranchPosition(BranchPosition.valueOf(result.getString("branch_position")))
-        ;
+        .setFirstRoundIndex(result.getInt("first_round_index"));
   }
 
 

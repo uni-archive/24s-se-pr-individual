@@ -2,6 +2,7 @@ package at.ac.tuwien.sepr.assignment.individual.service;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsTreeDto;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentTree;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -52,5 +54,19 @@ public class TournamentValidator {
 //
 //    return validationErrors;
 //  }
+
+  public void validateForGenerateFirstRound(TournamentStandingsTreeDto tree) throws ValidationException {
+    LOG.trace("validateForGenerateFirstRound({})", tree);
+
+    if (tree.thisParticipant() != null) {
+      throw new ValidationException("Validation of tree for generating first round failed", List.of("Tree contains participants"));
+    }
+
+    if (tree.branches() == null || tree.branches().size() != 2)
+      return;
+
+    validateForGenerateFirstRound(tree.branches().get(0));
+    validateForGenerateFirstRound(tree.branches().get(1));
+  }
 
 }

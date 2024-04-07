@@ -16,12 +16,17 @@ import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
 import at.ac.tuwien.sepr.assignment.individual.mapper.TournamentMapper;
 import at.ac.tuwien.sepr.assignment.individual.persistence.TournamentDao;
+import at.ac.tuwien.sepr.assignment.individual.type.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,13 +68,13 @@ public class TournamentServiceImpl implements TournamentService {
     var tournament = dao.getById(id);
     var branches = dao.getBranchesByTournamentId(id);
     var participantEntities = dao.getParticipantsByTournamentId(id);
-    var participantEntitieMap = participantEntities.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
+    var participantEntityMap = participantEntities.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
     var horseMap = horseService.findHorsesByIds(
             participantEntities.stream().map(TournamentParticipant::getHorseId).collect(Collectors.toSet()))
         .collect(Collectors.toMap(HorseDetailDto::id, Function.identity()));
     var participants = participantEntities.stream().map(p -> mapper.participantToDetailDto(p, horseMap)).collect(Collectors.toList());
 
-    var standingsTree = mapper.branchesToStandingsTree(branches, participants.stream().collect(Collectors.toMap(p -> participantEntitieMap.get(p.horseId()).getId(), Function.identity())));
+    var standingsTree = mapper.branchesToStandingsTree(branches, participants.stream().collect(Collectors.toMap(p -> participantEntityMap.get(p.horseId()).getId(), Function.identity())));
 
     return new TournamentStandingsDto(
         id,
@@ -98,7 +103,13 @@ public class TournamentServiceImpl implements TournamentService {
     validator.validateForStandingsUpdate(toUpdate);
 
     var participantEntities = dao.getParticipantsByTournamentId(tournamentId);
-    var participantEntitieMap = participantEntities.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
+    var participantEntityMap = participantEntities.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
+
+    var roundsReachedPerParticipant = mapper.determineRoundsReachedForParticipants(participantEntities, toUpdate);
+    for (var entry : roundsReachedPerParticipant.entrySet()) {
+      participantEntityMap.get(entry.getKey().getHorseId()).setRoundReached(entry.getValue());
+    }
+    dao.updateParticipants(participantEntities);
 
     Collection<TournamentTree> branchesToUpdate = mapper.tournamentTreeToBranches(tournamentId, toUpdate, dao.getBranchesByTournamentId(tournamentId), participantEntities);
     dao.updateStandings(branchesToUpdate);
@@ -109,7 +120,57 @@ public class TournamentServiceImpl implements TournamentService {
         .collect(Collectors.toMap(HorseDetailDto::id, Function.identity()));
     var participants = participantEntities.stream().map(p -> mapper.participantToDetailDto(p, horseMap)).toList();
 
-    var standingsTree = mapper.branchesToStandingsTree(updatedBranches, participants.stream().collect(Collectors.toMap(p -> participantEntitieMap.get(p.horseId()).getId(), Function.identity())));
+
+
+    var standingsTree = mapper.branchesToStandingsTree(updatedBranches, participants.stream().collect(Collectors.toMap(p -> participantEntityMap.get(p.horseId()).getId(), Function.identity())));
+
+
+
+    return standingsTree;
+  }
+
+  @Override
+  public TournamentStandingsTreeDto generateFirstRoundMatches(long tournamentId, TournamentStandingsTreeDto tree) throws ValidationException, ConflictException, NotFoundException {
+    validator.validateForGenerateFirstRound(tree);
+    var participants = dao.getParticipantsByTournamentId(tournamentId);
+    var horseMap = horseService.findHorsesByIds(participants.stream().map(TournamentParticipant::getHorseId).collect(Collectors.toSet()))
+        .collect(Collectors.toMap(HorseDetailDto::id, Function.identity()));
+    var allParticipationsOfHorses = dao.getParticipationsForHorseIds(participants.stream().map(TournamentParticipant::getHorseId).collect(Collectors.toList()));
+    var horsePoints = allParticipationsOfHorses.stream().map(p -> new Pair<Long, Integer>(p.getHorseId(), switch(p.getRoundReached()) {
+      case 3 -> 5;
+      case 2 -> 3;
+      case 1 -> 1;
+      default -> 0;
+    })).collect(Collectors.groupingBy(Pair::getFirst, Collectors.summingInt(Pair::getSecond)));
+
+    var participantsSorted = participants.stream().sorted(new Comparator<TournamentParticipant>() {
+      @Override
+      public int compare(TournamentParticipant o1, TournamentParticipant o2) {
+        var score1 = horsePoints.get(o1.getHorseId());
+        var score2 = horsePoints.get(o2.getHorseId());
+
+        if (!Objects.equals(score1, score2)){
+          return -score1.compareTo(score2);
+        }
+        return -horseMap.get(o1.getHorseId()).name().compareTo(horseMap.get(o1.getHorseId()).name());
+      }
+    }).toList();
+    LOG.info("{}", horsePoints);
+    LOG.info("{}", participantsSorted.stream().map(TournamentParticipant::getHorseId).toList());
+    var firstRoundBranches = dao.getFirstRoundBranchesByTournamentId(tournamentId).stream().sorted(Comparator.comparing(TournamentTree::getFirstRoundIndex)).toList();
+    for (int i = 0; i < 8 / 2; i++) {
+      LOG.info("i: {}, {}", firstRoundBranches.get(i).getFirstRoundIndex(), participantsSorted.get(i).getHorseId());
+      LOG.info("i+1: {}, {}", firstRoundBranches.get(i+1).getFirstRoundIndex(), participantsSorted.get(participantsSorted.size() - i - 1).getHorseId());
+      firstRoundBranches.get(i * 2).setParticipantId(participantsSorted.get(i).getId());
+      firstRoundBranches.get(i * 2 + 1).setParticipantId(participantsSorted.get(participantsSorted.size() - i - 1).getId());
+    }
+    dao.updateStandings(firstRoundBranches);
+
+    var branches = dao.getBranchesByTournamentId(tournamentId);
+    var participantEntityMap = participants.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
+    var participantsDao = participants.stream().map(p -> mapper.participantToDetailDto(p, horseMap)).toList();
+
+    var standingsTree = mapper.branchesToStandingsTree(branches, participantsDao.stream().collect(Collectors.toMap(p -> participantEntityMap.get(p.horseId()).getId(), Function.identity())));
 
     return standingsTree;
   }

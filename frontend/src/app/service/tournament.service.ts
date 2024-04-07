@@ -93,4 +93,13 @@ export class TournamentService {
     return this.http.put<TournamentStandingsTreeDto>(`${baseUri}/${id}/standings`, updatedStandings);
   }
 
+  /** todo javadoc
+   * Get a single tournament by its id.
+   * @param id the id of the tournament to get
+   * @return an Observable for the tournament
+   */
+  public generateFirstRounds(id: number, currentTree: TournamentStandingsTreeDto): Observable<TournamentStandingsTreeDto> {
+    return this.http.put<TournamentStandingsTreeDto>(`${baseUri}/${id}/standings/generate-first-round-matches`, currentTree);
+  }
+
 }

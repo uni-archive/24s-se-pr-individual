@@ -106,6 +106,19 @@ public class TournamentEndpoint {
   }
 
 
+  @PutMapping("{id}/standings/generate-first-round-matches")
+  public TournamentStandingsTreeDto generateFirstRoundMatches(@PathVariable("id") long id, @RequestBody TournamentStandingsTreeDto tree) throws ValidationException, ConflictException {
+    LOG.info("PUT " + BASE_PATH + "/{}/standings/generate-first-round-matches", id);
+    try {
+      return service.generateFirstRoundMatches(id, tree);
+    } catch (NotFoundException e) {
+      HttpStatus status = HttpStatus.NOT_FOUND;
+      logClientError(status, "Horse to update not found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    }
+  }
+
+
   private void logClientError(HttpStatus status, String message, Exception e) {
     LOG.warn("{} {}: {}: {}", status.value(), message, e.getClass().getSimpleName(), e.getMessage());
   }

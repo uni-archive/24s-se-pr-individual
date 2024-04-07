@@ -69,5 +69,15 @@ export class TournamentStandingsComponent implements OnInit {
       return;
     // TODO implement
     console.log("test")
+    this.service.generateFirstRounds(this.tournament!.id, this.standings!.tree).subscribe({
+      next: tree => {
+        this.standings!.tree = tree;
+        console.log(tree)
+      },
+      error: error => {
+        console.error('Error loading standings', error);
+        // TODO show an error message to the user. Include and sensibly present the info from the backend!
+      }
+    });
   }
 }

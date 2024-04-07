@@ -9,6 +9,16 @@ public class TournamentTree {
   private Long participantId;
   private Long parentId;
   private BranchPosition branchPosition;
+  private int firstRoundIndex;
+
+  public int getFirstRoundIndex() {
+    return firstRoundIndex;
+  }
+
+  public TournamentTree setFirstRoundIndex(int firstRoundIndex) {
+    this.firstRoundIndex = firstRoundIndex;
+    return this;
+  }
 
   public Long getId() {
     return id;

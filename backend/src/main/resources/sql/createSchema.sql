@@ -39,5 +39,6 @@ CREATE TABLE IF NOT EXISTS tournament_tree (
   tournament_id BIGINT REFERENCES tournament(id) NOT NULL,
   participant_id BIGINT REFERENCES tournament_participant(id) NULL,
   parent_id BIGINT REFERENCES tournament_tree(id) ON DELETE SET NULL,
-  branch_position ENUM ('FINAL_WINNER', 'UPPER', 'LOWER') NOT NULL
+  branch_position ENUM ('FINAL_WINNER', 'UPPER', 'LOWER') NOT NULL,
+  first_round_index INT NULL
 );
