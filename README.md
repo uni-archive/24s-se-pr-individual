@@ -27,8 +27,9 @@ Vergessen Sie nicht im Projekt ihren Namen und Matrikelnummer zu ersetzen.
 | 06.04. | 15h40     | 1h   | US7      | working on correct match input (todo backend isLocked generation)               |
 | 06.04. | 22h20     | 2.5h | US7      | impl round reached in backend                                                   |
 | 07.04. | 12h30     | 4h   | US8      | impl of generate first round                                                    |
+| 07.04. | 17h30     |    | US8      | code cleanup                                                                    |
 
-**Gesamtsumme der Zeit**: 6h 
+**Gesamtsumme der Zeit**: 21h 
 
 ### TODO:
 * horse edit error handling?

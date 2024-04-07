@@ -56,7 +56,7 @@ public class HorseServiceImpl implements HorseService {
 
 
   @Override
-  public HorseDetailDto update(HorseDetailDto horse) throws NotFoundException, ValidationException, ConflictException {
+  public HorseDetailDto update(HorseDetailDto horse) throws NotFoundException, ValidationException {
     LOG.trace("update({})", horse);
     validator.validateForUpdate(horse);
     var updatedHorse = dao.update(horse);
@@ -65,7 +65,7 @@ public class HorseServiceImpl implements HorseService {
   }
 
   @Override
-  public HorseDetailDto create(HorseDetailDto horse) throws ValidationException, ConflictException {
+  public HorseDetailDto create(HorseDetailDto horse) throws ValidationException {
     LOG.trace("create({})", horse);
     validator.validateForCreate(horse);
     var createdHorse = dao.create(horse);

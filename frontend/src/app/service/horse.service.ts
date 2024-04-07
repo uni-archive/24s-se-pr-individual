@@ -17,10 +17,22 @@ export class HorseService {
     private http: HttpClient,
   ) { }
 
+  /**
+   * Get a new horse from the system.
+   *
+   * @param id horse id
+   * @return an Observable for the found horse
+   */
   getById(id: number): Observable<Horse> {
     return this.http.get<Horse>(`${baseUri}/${id}`);
   }
 
+  /**
+   * Search for horses
+   *
+   * @param searchParams the search data for the horses that should be found
+   * @return an Observable for the found horses
+   */
   search(searchParams: HorseSearch): Observable<HorseListDto[]> {
     if (searchParams.name === '') {
       delete searchParams.name;

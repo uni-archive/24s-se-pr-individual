@@ -73,7 +73,13 @@ export class HorseComponent implements OnInit {
       },
       error: error => {
         console.error('Error deleting horse', error);
-        this.notification.error('Could not delete horse: ' + error.message, 'Error Deleting Horse');
+        const errorMessage = (() => {
+          switch (error.status) {
+            case 409: return "Horse is part of tournament";
+            default: return 'Error Deleting Horse: ' + error.message
+          }
+        })();
+        this.notification.error(errorMessage, 'Could not delete horse');
       }
     });
   }

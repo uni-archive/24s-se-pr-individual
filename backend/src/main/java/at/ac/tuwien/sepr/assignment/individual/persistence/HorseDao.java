@@ -54,7 +54,7 @@ public interface HorseDao {
    * @param horse the horse to create
    * @return the created horse
    */
-  Horse create(HorseDetailDto horse) throws ConflictException;
+  Horse create(HorseDetailDto horse);
 
   /**
    * Delete the horse with given ID from the persistent data store.

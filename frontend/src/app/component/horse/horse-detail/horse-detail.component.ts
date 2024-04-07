@@ -14,9 +14,9 @@ export class HorseDetailComponent implements OnInit {
   horse: Horse = {
     name: '',
     sex: Sex.female,
-    dateOfBirth: new Date(), // TODO this is bad
-    height: 0, // TODO this is bad
-    weight: 0, // TODO this is bad
+    dateOfBirth: new Date(),
+    height: 0,
+    weight: 0,
   };
 
   constructor(
@@ -37,7 +37,14 @@ export class HorseDetailComponent implements OnInit {
           },
           error: error => {
             console.error('Error loading horse', error);
-            // TODO show an error message to the user. Include and sensibly present the info from the backend!
+            const errorMessage = (() => {
+              switch (error.status) {
+                case 404: return "Horse with id " + id + " does not exist";
+                default: return 'Error loading Horse: ' + error.message
+              }
+            })();
+            this.router.navigate(["/horses"])
+            this.notification.error(errorMessage, 'Could not load horse');
           }
         });
       }
@@ -53,7 +60,13 @@ export class HorseDetailComponent implements OnInit {
       },
       error: error => {
         console.error('Error deleting horse', error);
-        // TODO show an error message to the user. Include and sensibly present the info from the backend!
+        const errorMessage = (() => {
+          switch (error.status) {
+            case 409: return "Horse is part of tournament";
+            default: return 'Error Deleting Horse: ' + error.message
+          }
+        })();
+        this.notification.error(errorMessage, 'Could not delete horse');
       }
     });
   }

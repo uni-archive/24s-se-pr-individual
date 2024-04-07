@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -133,14 +134,8 @@ public class HorseJdbcDao implements HorseDao {
       throw new NotFoundException("Could not update horse with ID " + horse.id() + ", because it does not exist");
     }
 
-    Horse h = new Horse()
-        .setId(horse.id())
-        .setName(horse.name())
-        .setSex(horse.sex())
-        .setDateOfBirth(horse.dateOfBirth())
-        .setHeight(horse.height())
-        .setWeight(horse.weight())
-        ;
+    Horse h = horseDtoToHorse(horse);
+
     if (horse.breed() != null) {
       h.setBreedId(horse.breed().id());
     }
@@ -158,13 +153,7 @@ public class HorseJdbcDao implements HorseDao {
         horse.weight(),
         horse.breed() != null ? horse.breed().id() : null);
 
-    Horse h = new Horse()
-        .setId(horse.id())
-        .setName(horse.name())
-        .setSex(horse.sex())
-        .setDateOfBirth(horse.dateOfBirth())
-        .setHeight(horse.height())
-        .setWeight(horse.weight());
+    Horse h = horseDtoToHorse(horse);
 
     if (horse.breed() != null) {
       h.setBreedId(horse.breed().id());
@@ -177,15 +166,28 @@ public class HorseJdbcDao implements HorseDao {
   public Horse deleteById(long id) throws NotFoundException, ConflictException {
     LOG.trace("deleteById({})", id);
     Horse horse = getById(id);
-    int updated = jdbcTemplate.update(SQL_DELETE, id);
+    int updated;
+    try {
+      updated = jdbcTemplate.update(SQL_DELETE, id);
+    } catch (DataIntegrityViolationException e) {
+      throw new ConflictException("Could not delete horse with ID " + id + ", is it a participant somewhere?", List.of(e.getMessage()));
+    }
     if (updated == 0) {
       throw new NotFoundException("Could not delete horse with ID " + id + ", because it does not exist");
     }
     LOG.debug("deleteById() update gave following response: {}", updated);
-    // todo revisit this when tournaments work
     return horse;
   }
 
+  private Horse horseDtoToHorse(HorseDetailDto horse) {
+    return new Horse()
+        .setId(horse.id())
+        .setName(horse.name())
+        .setSex(horse.sex())
+        .setDateOfBirth(horse.dateOfBirth())
+        .setHeight(horse.height())
+        .setWeight(horse.weight());
+  }
 
   private Horse mapRow(ResultSet result, int rownum) throws SQLException {
     return new Horse()

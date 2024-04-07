@@ -74,7 +74,7 @@ public class HorseEndpoint {
 
 
   @PutMapping("{id}")
-  public HorseDetailDto update(@PathVariable("id") long id, @RequestBody HorseDetailDto toUpdate) throws ValidationException, ConflictException {
+  public HorseDetailDto update(@PathVariable("id") long id, @RequestBody HorseDetailDto toUpdate) {
     LOG.info("PUT " + BASE_PATH + "/{}", toUpdate);
     LOG.debug("Body of request:\n{}", toUpdate);
     try {
@@ -82,6 +82,10 @@ public class HorseEndpoint {
     } catch (NotFoundException e) {
       HttpStatus status = HttpStatus.NOT_FOUND;
       logClientError(status, "Horse to update not found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    } catch (ValidationException e) {
+      HttpStatus status = HttpStatus.CONFLICT;
+      logClientError(status, "Invalid horse data", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }
@@ -97,10 +101,6 @@ public class HorseEndpoint {
     } catch (ValidationException e) {
       HttpStatus status = HttpStatus.BAD_REQUEST;
       logClientError(status, "Invalid horse data", e);
-      throw new ResponseStatusException(status, e.getMessage(), e);
-    } catch (ConflictException e) {
-      HttpStatus status = HttpStatus.CONFLICT;
-      logClientError(status, "Horse already exists", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }

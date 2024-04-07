@@ -1,5 +1,7 @@
 package at.ac.tuwien.sepr.assignment.individual.entity;
 
+import at.ac.tuwien.sepr.assignment.individual.type.BranchPosition;
+
 /**
  * Represents a horse in the persistent data store.
  */

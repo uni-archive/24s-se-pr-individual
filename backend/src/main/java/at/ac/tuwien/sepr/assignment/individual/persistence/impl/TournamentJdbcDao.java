@@ -2,7 +2,7 @@ package at.ac.tuwien.sepr.assignment.individual.persistence.impl;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
-import at.ac.tuwien.sepr.assignment.individual.entity.BranchPosition;
+import at.ac.tuwien.sepr.assignment.individual.type.BranchPosition;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentTree;
