@@ -26,7 +26,7 @@ public class TournamentValidator {
 
   public void validateForStandingsUpdate(TournamentStandingsTreeDto tree, int participantCount)
       throws ValidationException {
-    LOG.trace("validateForStandingsUpdate({})", tree);
+    LOG.trace("validateForStandingsUpdate({}, {})", tree, participantCount);
     var participantSet = new HashSet<Long>();
     var participantNullCount = new AtomicInteger(0);
     validateSubbranches(tree, null, participantSet, participantNullCount);
@@ -39,7 +39,7 @@ public class TournamentValidator {
   }
   private void validateSubbranches(TournamentStandingsTreeDto current, Long previousHorseId, Set<Long> participantSet,
                                    AtomicInteger participantNullCount) throws ValidationException {
-    LOG.trace("validateForStandingsUpdate({})", current);
+    LOG.trace("validateSubbranches({}, {}, {}, {})", current, previousHorseId, participantSet, participantNullCount);
     if (previousHorseId != null && current.thisParticipant() == null) {
       throw new ValidationException("Updating of tree failed", List.of("Tree contains missing placements"));
     }

@@ -59,7 +59,7 @@ public class TournamentMapper {
    * @return the converted {@link TournamentDetailDto}
    */
   public TournamentDetailDto entitiesToDetailDto(Tournament tournament, List<TournamentDetailParticipantDto> participants) {
-    LOG.trace("entityToDto({})", tournament);
+    LOG.trace("entitiesToDetailDto({}, {})", tournament, participants);
     if (tournament == null) {
       return null;
     }
@@ -82,7 +82,7 @@ public class TournamentMapper {
    * @return the converted {@link TournamentDetailParticipantDto}
    */
   public TournamentDetailParticipantDto participantToDetailDto(TournamentParticipant participant, Map<Long, HorseDetailDto> horses) {
-    LOG.trace("participantToDetailDto({})", participant);
+    LOG.trace("participantToDetailDto({}, {})", participant, horses);
     if (participant == null) {
       return null;
     }
@@ -106,6 +106,7 @@ public class TournamentMapper {
    * @return the HorseDetailDto object if found, null otherwise
    */
   private HorseDetailDto horseFromMap(TournamentParticipant participant, Map<Long, HorseDetailDto> map) {
+    LOG.trace("horseFromMap({}, {})", participant, map);
     var horseId = participant.getHorseId();
     if (horseId == null) {
       return null;
@@ -123,6 +124,7 @@ public class TournamentMapper {
    * @return the converted {@link TournamentDetailDto}
    */
   public TournamentDetailDto createDtoToEntity(TournamentCreateDto createDto) {
+    LOG.trace("createDtoToEntity({})", createDto);
     var participants = createDto.participants().stream().map(p -> new TournamentDetailParticipantDto(
         p.id(),
         p.name(),
@@ -170,6 +172,7 @@ public class TournamentMapper {
   private TournamentStandingsTreeDto findBranches(TournamentStandingsTreeDto lastDto, Long currentId,
                                                   Map<Long, TournamentTree> branches,
                                                   Map<Long, TournamentDetailParticipantDto> participants, int remainingDepth) {
+    LOG.trace("findBranches({}, {}, {}, {}, {})", lastDto, currentId, branches, participants, remainingDepth);
     if (remainingDepth == 0) {
       return null;
     }
@@ -211,6 +214,7 @@ public class TournamentMapper {
    */
   public Collection<TournamentTree> tournamentTreeToBranches(Long tournamentId, TournamentStandingsTreeDto treeDto,
                                                              Collection<TournamentTree> branches, Collection<TournamentParticipant> participants) {
+    LOG.trace("tournamentTreeToBranches({}, {}, {}, {})", tournamentId, treeDto, branches, participants);
     var root = branches.stream().filter(b -> b.getBranchPosition().equals(BranchPosition.FINAL_WINNER)).findFirst().get();
     var participantMap = participants.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
     root.setParticipantId(treeDto.thisParticipant() == null ? null : participantMap.get(treeDto.thisParticipant().horseId()).getId());
@@ -245,6 +249,7 @@ public class TournamentMapper {
    */
   public Map<TournamentParticipant, Integer> determineRoundsReachedForParticipants(Collection<TournamentParticipant> participants,
                                                                                    TournamentStandingsTreeDto tree) {
+    LOG.trace("determineRoundsReachedForParticipants({}, {})", participants, tree);
     Map<TournamentParticipant, Integer> out = new HashMap<>();
     Map<Long, TournamentParticipant> remainingParticipants = participants.stream()
         .collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
@@ -254,6 +259,7 @@ public class TournamentMapper {
 
   private void recursiveDetermineRoundsReached(TournamentStandingsTreeDto tree, int points, Map<Long, TournamentParticipant> remainingParticipants,
                                                Map<TournamentParticipant, Integer> out) {
+    LOG.trace("recursiveDetermineRoundsReached({}, {}, {}, {})", tree, points, remainingParticipants, out);
     if (points == 0) {
       return;
     }

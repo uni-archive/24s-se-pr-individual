@@ -25,7 +25,7 @@ public class HorseMapper {
    * @return the converted {@link HorseListDto}
    */
   public HorseListDto entityToListDto(Horse horse, Map<Long, BreedDto> breeds) {
-    LOG.trace("entityToListDto({})", horse);
+    LOG.trace("entityToListDto({}, {})", horse, breeds);
     if (horse == null) {
       return null;
     }
@@ -47,7 +47,7 @@ public class HorseMapper {
    * @return the converted {@link HorseListDto}
    */
   public HorseDetailDto entityToDetailDto(Horse horse, Map<Long, BreedDto> breeds) {
-    LOG.trace("entityToDto({})", horse);
+    LOG.trace("entityToDetailDto({}, {})", horse, breeds);
     if (horse == null) {
       return null;
     }
@@ -64,6 +64,7 @@ public class HorseMapper {
   }
 
   private BreedDto breedFromMap(Horse horse, Map<Long, BreedDto> map) {
+    LOG.trace("breedFromMap({}, {})", horse, map);
     var breedId = horse.getBreedId();
     if (breedId == null) {
       return null;

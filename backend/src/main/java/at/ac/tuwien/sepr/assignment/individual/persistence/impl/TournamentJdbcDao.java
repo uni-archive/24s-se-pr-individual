@@ -125,6 +125,7 @@ public class TournamentJdbcDao implements TournamentDao {
 
 
   private void createTreeBranch(Long tournamentId, Long parentId, BranchPosition branchPosition, int remaining, AtomicInteger firstRoundIndex) {
+    LOG.trace("createTreeBranch({}, {}, {}, {}, {})", tournamentId, parentId, branchPosition, remaining, firstRoundIndex);
     if (remaining <= 0) {
       return;
     }
@@ -184,7 +185,7 @@ public class TournamentJdbcDao implements TournamentDao {
 
   @Override
   public Collection<TournamentTree> getBranchesByTournamentId(long id) throws NotFoundException {
-    LOG.trace("getStandingsById({})", id);
+    LOG.trace("getBranchesByTournamentId({})", id);
     var out = jdbcTemplate.query(SQL_FIND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
     if (out.isEmpty()) {
       throw new NotFoundException("No branches with tournament ID %d found".formatted(id));
@@ -194,7 +195,7 @@ public class TournamentJdbcDao implements TournamentDao {
 
   @Override
   public Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id) throws NotFoundException {
-    LOG.trace("getStandingsById({})", id);
+    LOG.trace("getFirstRoundBranchesByTournamentId({})", id);
     var out = jdbcTemplate.query(SQL_FIND_FIRST_ROUND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
     if (out.isEmpty()) {
       throw new NotFoundException("No branches with tournament ID %d found".formatted(id));
@@ -210,6 +211,7 @@ public class TournamentJdbcDao implements TournamentDao {
 
   @Override
   public void updateStandings(Collection<TournamentTree> branches) throws NotFoundException, ConflictException {
+    LOG.trace("updateStandings({})", branches);
     var branchesList = new ArrayList<>(branches);
     var affected = jdbcTemplate.batchUpdate(SQL_UPDATE_BRANCHES, new BatchPreparedStatementSetter() {
       @Override
@@ -241,6 +243,7 @@ public class TournamentJdbcDao implements TournamentDao {
 
   @Override
   public void updateParticipants(Collection<TournamentParticipant> participants) throws NotFoundException, ConflictException {
+    LOG.trace("updateParticipants({})", participants);
     var participantsList = new ArrayList<>(participants);
     var affected = jdbcTemplate.batchUpdate(SQL_UPDATE_PARTICIPANTS, new BatchPreparedStatementSetter() {
       @Override

@@ -48,6 +48,7 @@ public class TournamentServiceImpl implements TournamentService {
 
   @Override
   public Stream<TournamentListDto> search(TournamentSearchDto searchParameters) {
+    LOG.trace("search({})", searchParameters);
     var tournaments = dao.search(searchParameters);
 
     return tournaments.stream()
@@ -57,6 +58,7 @@ public class TournamentServiceImpl implements TournamentService {
   @Override
   public TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException, NotFoundException {
     LOG.info("Creating tournament with name {}", toCreate.name());
+    LOG.trace("create({})", toCreate);
     validator.validateTournament(toCreate);
     TournamentDetailDto tournamentDetail = mapper.createDtoToEntity(toCreate);
     var tournament = dao.create(tournamentDetail);
@@ -71,6 +73,7 @@ public class TournamentServiceImpl implements TournamentService {
   @Override
   public TournamentStandingsDto getStandingsById(long id) throws NotFoundException {
     LOG.info("Getting tournament standings with tournament id {}", id);
+    LOG.trace("getStandingsById({})", id);
     var tournament = dao.getById(id);
     var branches = dao.getBranchesByTournamentId(id);
     var participantEntities = dao.getParticipantsByTournamentId(id);
@@ -94,6 +97,7 @@ public class TournamentServiceImpl implements TournamentService {
   @Override
   public TournamentDetailDto getById(long id) throws NotFoundException {
     LOG.info("Getting tournament with id {}", id);
+    LOG.trace("getById({})", id);
     var tournament = dao.getById(id);
     var participantEntities = dao.getParticipantsByTournamentId(id);
     var horseMap = horseService.findHorsesByIds(
@@ -142,6 +146,7 @@ public class TournamentServiceImpl implements TournamentService {
   @Override
   public TournamentStandingsTreeDto generateFirstRoundMatches(long tournamentId, TournamentStandingsTreeDto tree)
       throws ValidationException, ConflictException, NotFoundException {
+    LOG.trace("generateFirstRoundMatches({}, {})", tournamentId, tree);
     validator.validateForGenerateFirstRound(tree);
     var participants = dao.getParticipantsByTournamentId(tournamentId);
     var horseMap = horseService.findHorsesByIds(participants.stream().map(TournamentParticipant::getHorseId).collect(Collectors.toSet()))
