@@ -51,19 +51,21 @@ public class TournamentJdbcDao implements TournamentDao {
   private static final String SQL_CREATE_TOURNAMENT = "INSERT INTO " + TABLE_NAME + " (name, start_date, end_date) VALUES (:name, :startDate, :endDate)";
   private static final String SQL_CREATE_PARTICIPANT = "INSERT INTO tournament_participant (tournament_id, horse_id, entry_number) VALUES (?, ?, ?)";
   private static final String SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID = "SELECT * FROM tournament_participant WHERE tournament_id = ?";
-  private static final String SQL_CREATE_TOURNAMENT_TREE = "INSERT INTO tournament_tree (tournament_id, participant_id, parent_id, branch_position, first_round_index) VALUES (?, NULL, ?, ?, ?)";
+  private static final String SQL_CREATE_TOURNAMENT_TREE = "INSERT INTO tournament_tree (tournament_id, participant_id, parent_id,"
+      + " branch_position, first_round_index) VALUES (?, NULL, ?, ?, ?)";
   private static final String SQL_FIND_BRANCHES_BY_TOURNAMENT_ID = "SELECT * FROM tournament_tree WHERE tournament_id = ?";
-  private static final String SQL_FIND_FIRST_ROUND_BRANCHES_BY_TOURNAMENT_ID = "SELECT * FROM tournament_tree WHERE tournament_id = ? AND first_round_index IS NOT NULL";
+  private static final String SQL_FIND_FIRST_ROUND_BRANCHES_BY_TOURNAMENT_ID = "SELECT * FROM tournament_tree WHERE tournament_id = ?"
+      + " AND first_round_index IS NOT NULL";
   private static final String SQL_UPDATE_BRANCHES = "UPDATE tournament_tree SET participant_id = ? WHERE id = ?";
   private static final String SQL_UPDATE_PARTICIPANTS = "UPDATE tournament_participant SET round_reached = ? WHERE id = ?";
-  private static final String SQL_FIND_PARTICIPANTS_BY_HORSE_IDS = "SELECT " +
-      "p.id AS id, p.tournament_id AS tournament_id, p.horse_id AS horse_id, p.entry_number AS entry_number, p.round_reached AS round_reached" +
-      " FROM tournament_participant AS p LEFT JOIN tournament AS t ON t.id = p.tournament_id WHERE p.horse_id IN (:ids) AND (" +
-      "start_date BETWEEN DATEADD('YEAR', -1, CURRENT_DATE) AND CURRENT_DATE OR " +
-      "end_date BETWEEN DATEADD('YEAR', -1, CURRENT_DATE) AND CURRENT_DATE OR " +
-      "(start_date <= DATEADD('YEAR', -1, CURRENT_DATE) AND end_date >= CURRENT_DATE)" +
-      ");";
-// (SELECT id FROM tournament_participant WHERE horse_id = ? AND tournament_id = ?)
+  private static final String SQL_FIND_PARTICIPANTS_BY_HORSE_IDS = "SELECT "
+      + "p.id AS id, p.tournament_id AS tournament_id, p.horse_id AS horse_id, p.entry_number AS entry_number, p.round_reached AS round_reached"
+      + " FROM tournament_participant AS p LEFT JOIN tournament AS t ON t.id = p.tournament_id WHERE p.horse_id IN (:ids) AND ("
+      + "start_date BETWEEN DATEADD('YEAR', -1, CURRENT_DATE) AND CURRENT_DATE OR "
+      + "end_date BETWEEN DATEADD('YEAR', -1, CURRENT_DATE) AND CURRENT_DATE OR "
+      + "(start_date <= DATEADD('YEAR', -1, CURRENT_DATE) AND end_date >= CURRENT_DATE)"
+      + ");";
+
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
 
@@ -95,7 +97,7 @@ public class TournamentJdbcDao implements TournamentDao {
         .setStartDate(toCreate.startDate())
         .setEndDate(toCreate.endDate());
     var keyHolder = new GeneratedKeyHolder();
-    var x = jdbcNamed.update(SQL_CREATE_TOURNAMENT, new BeanPropertySqlParameterSource(tournament), keyHolder);
+    final var x = jdbcNamed.update(SQL_CREATE_TOURNAMENT, new BeanPropertySqlParameterSource(tournament), keyHolder);
     var id = keyHolder.getKey().longValue();
 
     tournament.setId(id);
@@ -123,8 +125,9 @@ public class TournamentJdbcDao implements TournamentDao {
 
   // todo javadoc
   private void createTreeBranch(Long tournamentId, Long parentId, BranchPosition branchPosition, int remaining, AtomicInteger firstRoundIndex) {
-    if (remaining <= 0)
+    if (remaining <= 0) {
       return;
+    }
 
     KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -132,10 +135,11 @@ public class TournamentJdbcDao implements TournamentDao {
         connection -> {
           PreparedStatement ps = connection.prepareStatement(SQL_CREATE_TOURNAMENT_TREE, new String[] {"id"});
           ps.setLong(1, tournamentId);
-          if (parentId != null)
+          if (parentId != null) {
             ps.setLong(2, parentId);
-          else
+          } else {
             ps.setNull(2, Types.BIGINT);
+          }
           ps.setString(3, branchPosition.toString());
           if (remaining == 1) {
             ps.setInt(4, firstRoundIndex.getAndIncrement());
@@ -211,10 +215,11 @@ public class TournamentJdbcDao implements TournamentDao {
       @Override
       public void setValues(PreparedStatement ps, int i) throws SQLException {
         var b = branchesList.get(i);
-        if (b.getParticipantId() == null)
+        if (b.getParticipantId() == null) {
           ps.setNull(1, Types.BIGINT);
-        else
+        } else {
           ps.setLong(1, b.getParticipantId());
+        }
         ps.setLong(2, b.getId());
       }
 
@@ -224,11 +229,13 @@ public class TournamentJdbcDao implements TournamentDao {
       }
     });
     var affectedTotal = Arrays.stream(affected).reduce(0, Integer::sum);
-    if (affectedTotal == 0)
+    if (affectedTotal == 0) {
       throw new NotFoundException("Branches probably do not exist. Affected rows: {}".formatted(affectedTotal));
+    }
 
-    if (affectedTotal != branches.size())
+    if (affectedTotal != branches.size()) {
       throw new ConflictException("Error while updating branches", List.of("Invalid number of branches affected. Affected rows: {}".formatted(affectedTotal)));
+    }
 
   }
 
@@ -249,11 +256,13 @@ public class TournamentJdbcDao implements TournamentDao {
       }
     });
     var affectedTotal = Arrays.stream(affected).reduce(0, Integer::sum);
-    if (affectedTotal == 0)
+    if (affectedTotal == 0) {
       throw new NotFoundException("Branches probably do not exist. Affected rows: {}".formatted(affectedTotal));
+    }
 
-    if (affectedTotal != participantsList.size())
+    if (affectedTotal != participantsList.size()) {
       throw new ConflictException("Error while updating branches", List.of("Invalid number of branches affected. Affected rows: {}".formatted(affectedTotal)));
+    }
 
   }
 

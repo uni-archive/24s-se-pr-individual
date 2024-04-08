@@ -69,12 +69,12 @@ public class TournamentTree {
 
   @Override
   public String toString() {
-    return "TournamentTree{" +
-        "id=" + id +
-        ", tournamentId=" + tournamentId +
-        ", participantId=" + participantId +
-        ", parentId=" + parentId +
-        ", branchPosition=" + branchPosition +
-        '}';
+    return "TournamentTree{"
+        + "id=" + id
+        + ", tournamentId=" + tournamentId
+        + ", participantId=" + participantId
+        + ", parentId=" + parentId
+        + ", branchPosition=" + branchPosition
+        + '}';
   }
 }

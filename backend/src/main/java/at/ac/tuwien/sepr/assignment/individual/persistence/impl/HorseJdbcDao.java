@@ -165,7 +165,7 @@ public class HorseJdbcDao implements HorseDao {
   @Override
   public Horse deleteById(long id) throws NotFoundException, ConflictException {
     LOG.trace("deleteById({})", id);
-    Horse horse = getById(id);
+    final Horse horse = getById(id);
     int updated;
     try {
       updated = jdbcTemplate.update(SQL_DELETE, id);

@@ -29,6 +29,7 @@ Vergessen Sie nicht im Projekt ihren Namen und Matrikelnummer zu ersetzen.
 | 07.04. | 12h30     | 4h    | US8      | impl of generate first round                                                    |
 | 07.04. | 17h30     | 45min | TS19     | working on horse validation                                                     |
 | 08.04. | 19h30     | 45m   | TS19     | working on tournmanent validation                                               |
+| 08.04. | 20h15     | 45m   | TS15     | checkstyle fixing for backend                                                   |
 
 **Gesamtsumme der Zeit**: 21h 
 

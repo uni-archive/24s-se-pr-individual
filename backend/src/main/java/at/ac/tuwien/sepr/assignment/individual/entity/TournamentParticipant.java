@@ -61,12 +61,12 @@ public class TournamentParticipant {
 
   @Override
   public String toString() {
-    return "TournamentParticipant{" +
-        "id=" + id +
-        ", tournamentId=" + tournamentId +
-        ", horseId=" + horseId +
-        ", entryNumber=" + entryNumber +
-        ", roundReached=" + roundReached +
-        '}';
+    return "TournamentParticipant{"
+        + "id=" + id
+        + ", tournamentId=" + tournamentId
+        + ", horseId=" + horseId
+        + ", entryNumber=" + entryNumber
+        + ", roundReached=" + roundReached
+        + '}';
   }
 }

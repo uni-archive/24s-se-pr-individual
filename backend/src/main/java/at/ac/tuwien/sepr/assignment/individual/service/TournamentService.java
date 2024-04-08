@@ -61,7 +61,8 @@ public interface TournamentService {
    * @throws NotFoundException if the tournament does not exist.
    * @throws ConflictException   if the data given for the horse is in conflict with the data currently in the system (breed does not exist, …)
    */
-  TournamentStandingsTreeDto updateStandings(long tournamentId, TournamentStandingsTreeDto toUpdate) throws ValidationException, ConflictException, NotFoundException;
+  TournamentStandingsTreeDto updateStandings(long tournamentId, TournamentStandingsTreeDto toUpdate)
+      throws ValidationException, ConflictException, NotFoundException;
 
   /** TODO
    * Get the details of a tournament from the persistent data store.
@@ -71,5 +72,6 @@ public interface TournamentService {
    * @throws NotFoundException if the tournament does not exist.
    * @throws ConflictException   if the data given for the horse is in conflict with the data currently in the system (breed does not exist, …)
    */
-  TournamentStandingsTreeDto generateFirstRoundMatches(long tournamentId, TournamentStandingsTreeDto tree) throws ValidationException, ConflictException, NotFoundException;
+  TournamentStandingsTreeDto generateFirstRoundMatches(long tournamentId, TournamentStandingsTreeDto tree)
+      throws ValidationException, ConflictException, NotFoundException;
 }

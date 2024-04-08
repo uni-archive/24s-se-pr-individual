@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -152,9 +153,12 @@ public class TournamentMapper {
   }
 
   // todo javadoc
-  private TournamentStandingsTreeDto findBranches(TournamentStandingsTreeDto lastDto, Long currentId, Map<Long, TournamentTree> branches, Map<Long, TournamentDetailParticipantDto> participants, int remainingDepth) {
-    if (remainingDepth == 0)
+  private TournamentStandingsTreeDto findBranches(TournamentStandingsTreeDto lastDto, Long currentId,
+                                                  Map<Long, TournamentTree> branches,
+                                                  Map<Long, TournamentDetailParticipantDto> participants, int remainingDepth) {
+    if (remainingDepth == 0) {
       return null;
+    }
     TournamentTree currentBranch = branches.get(currentId);
 
     TournamentDetailParticipantDto currentParticipant = null;
@@ -174,6 +178,7 @@ public class TournamentMapper {
     switch (currentBranch.getBranchPosition()) {
       case UPPER -> lastDto.branches().add(0, currentDto);
       case LOWER -> lastDto.branches().add(1, currentDto);
+      default -> new AtomicInteger(1); // do not do nothing, idk why checkstyle wants me to add this;
     }
 
     branches.values().stream().filter(b -> Objects.equals(b.getParentId(), currentId))
@@ -183,7 +188,8 @@ public class TournamentMapper {
   }
 
   // todo javadoc
-  public Collection<TournamentTree> tournamentTreeToBranches(Long tournamentId, TournamentStandingsTreeDto treeDto, Collection<TournamentTree> branches, Collection<TournamentParticipant> participants) {
+  public Collection<TournamentTree> tournamentTreeToBranches(Long tournamentId, TournamentStandingsTreeDto treeDto,
+                                                             Collection<TournamentTree> branches, Collection<TournamentParticipant> participants) {
     var root = branches.stream().filter(b -> b.getBranchPosition().equals(BranchPosition.FINAL_WINNER)).findFirst().get();
     var participantMap = participants.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
     root.setParticipantId(treeDto.thisParticipant() == null ? null : participantMap.get(treeDto.thisParticipant().horseId()).getId());
@@ -196,29 +202,35 @@ public class TournamentMapper {
     return branches;
   }
 
-  public void recursiveParticipantUpdate(TournamentStandingsTreeDto treeDto, BranchPosition pos, Collection<TournamentTree> branches, Long previousId, Map<Long, TournamentParticipant> participantMap) {
+  public void recursiveParticipantUpdate(TournamentStandingsTreeDto treeDto, BranchPosition pos,
+                                         Collection<TournamentTree> branches, Long previousId, Map<Long, TournamentParticipant> participantMap) {
     var current = branches.stream().filter(b -> Objects.equals(b.getParentId(), previousId) && b.getBranchPosition().equals(pos)).findFirst().get();
     current.setParticipantId(treeDto.thisParticipant() == null ? null : participantMap.get(treeDto.thisParticipant().horseId()).getId());
     LOG.info("{}, {}", current.getParticipantId(), treeDto.thisParticipant());
 
-    if (treeDto.branches() == null || treeDto.branches().size() != 2)
+    if (treeDto.branches() == null || treeDto.branches().size() != 2) {
       return;
+    }
 
     recursiveParticipantUpdate(treeDto.branches().get(0), BranchPosition.UPPER, branches, current.getId(), participantMap);
     recursiveParticipantUpdate(treeDto.branches().get(1), BranchPosition.LOWER, branches, current.getId(), participantMap);
   }
 
   // todo javadoc
-  public Map<TournamentParticipant, Integer> determineRoundsReachedForParticipants(Collection<TournamentParticipant> participants, TournamentStandingsTreeDto tree) {
+  public Map<TournamentParticipant, Integer> determineRoundsReachedForParticipants(Collection<TournamentParticipant> participants,
+                                                                                   TournamentStandingsTreeDto tree) {
     Map<TournamentParticipant, Integer> out = new HashMap<>();
-    Map<Long, TournamentParticipant> remainingParticipants = participants.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
+    Map<Long, TournamentParticipant> remainingParticipants = participants.stream()
+        .collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
     recursiveDetermineRoundsReached(tree, 3, remainingParticipants, out);
     return out;
   }
 
-  private void recursiveDetermineRoundsReached(TournamentStandingsTreeDto tree, int points, Map<Long, TournamentParticipant> remainingParticipants, Map<TournamentParticipant, Integer> out) {
-    if (points == 0)
+  private void recursiveDetermineRoundsReached(TournamentStandingsTreeDto tree, int points, Map<Long, TournamentParticipant> remainingParticipants,
+                                               Map<TournamentParticipant, Integer> out) {
+    if (points == 0) {
       return;
+    }
 
     if (tree.thisParticipant() != null && remainingParticipants.containsKey(tree.thisParticipant().horseId())) {
       var participant = remainingParticipants.get(tree.thisParticipant().horseId());

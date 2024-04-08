@@ -24,51 +24,65 @@ import java.util.stream.Collectors;
 public class TournamentValidator {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public void validateForStandingsUpdate(TournamentStandingsTreeDto tree, int participantCount) throws ValidationException {
+  public void validateForStandingsUpdate(TournamentStandingsTreeDto tree, int participantCount)
+      throws ValidationException {
     LOG.trace("validateForStandingsUpdate({})", tree);
     var participantSet = new HashSet<Long>();
     var participantNullCount = new AtomicInteger(0);
     validateSubbranches(tree, null, participantSet, participantNullCount);
 
-    if (participantSet.size() + participantNullCount.get() != participantCount)
-      throw new ValidationException("Updating of tree failed", List.of("Participants can only be entered once in the first round"));
+    if (participantSet.size() + participantNullCount.get() != participantCount) {
+      throw new ValidationException("Updating of tree failed",
+          List.of("Participants can only be entered once in the first round"));
+    }
 
   }
-  private void validateSubbranches(TournamentStandingsTreeDto current, Long previousHorseId, Set<Long> participantSet, AtomicInteger participantNullCount) throws ValidationException {
+  private void validateSubbranches(TournamentStandingsTreeDto current, Long previousHorseId, Set<Long> participantSet,
+                                   AtomicInteger participantNullCount) throws ValidationException {
     LOG.trace("validateForStandingsUpdate({})", current);
-    if (previousHorseId != null && current.thisParticipant() == null)
+    if (previousHorseId != null && current.thisParticipant() == null) {
       throw new ValidationException("Updating of tree failed", List.of("Tree contains missing placements"));
+    }
 
     if (current.branches() == null || current.branches().isEmpty()) {
-      if (current.thisParticipant() == null)
+      if (current.thisParticipant() == null) {
         participantNullCount.incrementAndGet();
-      else
+      } else {
         participantSet.add(current.thisParticipant().horseId());
+      }
       return;
     }
 
-    validateSubbranches(current.branches().get(0), current.thisParticipant() == null ? null : current.thisParticipant().horseId(), participantSet, participantNullCount);
-    validateSubbranches(current.branches().get(1), current.thisParticipant() == null ? null : current.thisParticipant().horseId(), participantSet, participantNullCount);
+    validateSubbranches(current.branches().get(0), current.thisParticipant() == null
+        ? null : current.thisParticipant().horseId(), participantSet, participantNullCount);
+    validateSubbranches(current.branches().get(1), current.thisParticipant() == null
+        ? null : current.thisParticipant().horseId(), participantSet, participantNullCount);
   }
 
   public void validateTournament(TournamentCreateDto toCreate) throws ValidationException {
     LOG.trace("validateTournament({})", toCreate);
     List<String> validationErrors = new ArrayList<>();
-    if (toCreate.name() == null || toCreate.name().isBlank())
+    if (toCreate.name() == null || toCreate.name().isBlank()) {
       validationErrors.add("No name given");
+    }
 
-    if (toCreate.endDate() == null)
+    if (toCreate.endDate() == null) {
       validationErrors.add("No end date given");
+    }
 
-    if (toCreate.startDate() == null)
+    if (toCreate.startDate() == null) {
       validationErrors.add("No start date given");
+    }
 
-    if (toCreate.startDate() != null && toCreate.endDate() != null &&
-      ! toCreate.startDate().isBefore(toCreate.endDate()))
+    if (toCreate.startDate() != null && toCreate.endDate() != null
+        && ! toCreate.startDate().isBefore(toCreate.endDate())) {
       validationErrors.add("End date must be after start date");
+    }
 
-    if (toCreate.participants().stream().map(p -> p.id()).collect(Collectors.toSet()).size() != toCreate.participants().size())
+    if (toCreate.participants().stream().map(p -> p.id())
+        .collect(Collectors.toSet()).size() != toCreate.participants().size()) {
       validationErrors.add("Participant list contains duplicates");
+    }
 
 
 
@@ -81,11 +95,13 @@ public class TournamentValidator {
     LOG.trace("validateForGenerateFirstRound({})", tree);
 
     if (tree.thisParticipant() != null) {
-      throw new ValidationException("Validation of tree for generating first round failed", List.of("Tree contains participants"));
+      throw new ValidationException("Validation of tree for generating first round failed",
+          List.of("Tree contains participants"));
     }
 
-    if (tree.branches() == null || tree.branches().size() != 2)
+    if (tree.branches() == null || tree.branches().size() != 2) {
       return;
+    }
 
     validateForGenerateFirstRound(tree.branches().get(0));
     validateForGenerateFirstRound(tree.branches().get(1));

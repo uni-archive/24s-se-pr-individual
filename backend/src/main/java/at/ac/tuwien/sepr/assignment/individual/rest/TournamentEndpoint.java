@@ -97,7 +97,8 @@ public class TournamentEndpoint {
 
 
   @PutMapping("{id}/standings")
-  public TournamentStandingsTreeDto updateStandings(@PathVariable("id") long id, @RequestBody TournamentStandingsTreeDto toUpdate) throws ValidationException, ConflictException {
+  public TournamentStandingsTreeDto updateStandings(@PathVariable("id") long id,
+                                                    @RequestBody TournamentStandingsTreeDto toUpdate) throws ValidationException, ConflictException {
     LOG.info("PUT " + BASE_PATH + "/{}/standings", toUpdate);
     LOG.debug("Body of request:\n{}", toUpdate);
     try {
@@ -111,7 +112,8 @@ public class TournamentEndpoint {
 
 
   @PutMapping("{id}/standings/generate-first-round-matches")
-  public TournamentStandingsTreeDto generateFirstRoundMatches(@PathVariable("id") long id, @RequestBody TournamentStandingsTreeDto tree) throws ValidationException, ConflictException {
+  public TournamentStandingsTreeDto generateFirstRoundMatches(@PathVariable("id") long id,
+                                                              @RequestBody TournamentStandingsTreeDto tree) throws ValidationException, ConflictException {
     LOG.info("PUT " + BASE_PATH + "/{}/standings/generate-first-round-matches", id);
     try {
       return service.generateFirstRoundMatches(id, tree);
