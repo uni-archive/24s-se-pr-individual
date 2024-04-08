@@ -123,7 +123,7 @@ public class TournamentJdbcDao implements TournamentDao {
     createTreeBranch(tournamentId, null, BranchPosition.FINAL_WINNER, 4, firstRoundIndex);
   }
 
-  // todo javadoc
+
   private void createTreeBranch(Long tournamentId, Long parentId, BranchPosition branchPosition, int remaining, AtomicInteger firstRoundIndex) {
     if (remaining <= 0) {
       return;

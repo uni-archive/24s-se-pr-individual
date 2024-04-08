@@ -32,65 +32,75 @@ public interface TournamentDao {
   /**
    * Create a new tournament in the persistent data store.
    *
-   * @param toCreate the tournament to create.
-   * @return the created tournament.
+   * @param toCreate the tournament to create
+   * @return the created tournament
+   * @throws ConflictException if there is a conflict with the data in the persistent data store
    */
   Tournament create(TournamentDetailDto toCreate) throws ConflictException;
 
   /**
-   * Get the details of a tournament from the persistent data store.
+   * Get a tournament by its ID from the persistent data store.
    *
-   * @param id the id of the tournament to get.
-   * @return the details of the tournament.
+   * @param id the ID of the tournament to get
+   * @return the tournament
+   * @throws NotFoundException if the Tournament with the given ID does not exist in the persistent data store
    */
   Tournament getById(long id) throws NotFoundException;
 
   /**
-   * Get the participants of a tournament from the persistent data store.
+   * Get the participants of a tournament by the tournament's ID from the persistent data store.
    *
-   * @param id the id of the tournament to get.
-   * @return the participants of the tournament.
+   * @param id the ID of the tournament
+   * @return a collection of TournamentParticipant entities
+   * @throws NotFoundException if the Tournament with the given ID does not exist in the persistent data store
    */
   Collection<TournamentParticipant> getParticipantsByTournamentId(long id) throws NotFoundException;
 
 
   /**
-   * Get the standing branches of a tournament from the persistent data store.
+   * Get the branches of a tournament by the tournament's ID from the persistent data store.
    *
-   * @param id the id of the tournament to get.
-   * @return the standing branches of the tournament.
+   * @param id the ID of the tournament
+   * @return a collection of TournamentTree entities
+   * @throws NotFoundException if the Tournament with the given ID does not exist in the persistent data store
    */
   Collection<TournamentTree> getBranchesByTournamentId(long id) throws NotFoundException;
 
   /**
-   * Get the standing branches of a tournament from the persistent data store.
+   * Get the first round branches of a tournament by the tournament's ID from the persistent data store.
    *
-   * @param id the id of the tournament to get.
-   * @return the standing branches of the tournament.
+   * @param id the ID of the tournament
+   * @return a collection of TournamentTree entities
+   * @throws NotFoundException if the Tournament with the given ID does not exist in the persistent data store
    */
   Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id) throws NotFoundException;
 
 
-  /** TODO
-   * Get the standing branches of a tournament from the persistent data store.
+  /**
+   * Update the standings of a tournament in the persistent data store.
    *
-   * @param id the id of the tournament to get.
+   * @param branches the branches to update
+   * @throws NotFoundException if the Tournament with the given ID does not exist in the persistent data store
+   * @throws ConflictException if there is a conflict with the data in the persistent data store
    */
   void updateStandings(Collection<TournamentTree> branches) throws NotFoundException, ConflictException;
 
 
-  /** TODO
-   * Get the standing branches of a tournament from the persistent data store.
+  /**
+   * Update the participants of a tournament in the persistent data store.
    *
-   * @param id the id of the tournament to get.
+   * @param participants the participants to update
+   * @throws NotFoundException if the Tournament with the given ID does not exist in the persistent data store
+   * @throws ConflictException if there is a conflict with the data in the persistent data store
    */
   void updateParticipants(Collection<TournamentParticipant> participants) throws NotFoundException, ConflictException;
 
 
-  /** TODO
-   * Get the standing branches of a tournament from the persistent data store.
+  /**
+   * Get the participations for a collection of horse IDs from the persistent data store.
    *
-   * @param id the id of the tournament to get.
+   * @param horseIds the IDs of the horses
+   * @return a collection of TournamentParticipant entities
    */
   Collection<TournamentParticipant> getParticipationsForHorseIds(Collection<Long> horseIds);
 }

@@ -53,24 +53,30 @@ public interface TournamentService {
    */
   TournamentDetailDto getById(long id) throws NotFoundException;
 
-  /** TODO
-   * Get the details of a tournament from the persistent data store.
+  /**
+   * Update the standings of a tournament in the persistent data store.
+   * This method takes in a TournamentStandingsTreeDto object which represents the updated standings of the tournament.
    *
-   * @param id the id of the tournament to get.
-   * @return the details of the tournament.
-   * @throws NotFoundException if the tournament does not exist.
-   * @throws ConflictException   if the data given for the horse is in conflict with the data currently in the system (breed does not exist, …)
+   * @param tournamentId the id of the tournament to update
+   * @param toUpdate the TournamentStandingsTreeDto object representing the updated standings
+   * @return the updated TournamentStandingsTreeDto object
+   * @throws ValidationException if the data in the TournamentStandingsTreeDto object is invalid
+   * @throws ConflictException if there is a conflict with the data in the persistent data store
+   * @throws NotFoundException if the tournament with the given ID does not exist in the persistent data store
    */
   TournamentStandingsTreeDto updateStandings(long tournamentId, TournamentStandingsTreeDto toUpdate)
       throws ValidationException, ConflictException, NotFoundException;
 
-  /** TODO
-   * Get the details of a tournament from the persistent data store.
+  /**
+   * Generate the first round matches of a tournament.
+   * This method takes in a TournamentStandingsTreeDto object which represents the initial standings of the tournament.
    *
-   * @param id the id of the tournament to get.
-   * @return the details of the tournament.
-   * @throws NotFoundException if the tournament does not exist.
-   * @throws ConflictException   if the data given for the horse is in conflict with the data currently in the system (breed does not exist, …)
+   * @param tournamentId the id of the tournament to generate matches for
+   * @param tree the TournamentStandingsTreeDto object representing the initial standings
+   * @return the updated TournamentStandingsTreeDto object with the first round matches
+   * @throws ValidationException if the data in the TournamentStandingsTreeDto object is invalid
+   * @throws ConflictException if there is a conflict with the data in the persistent data store
+   * @throws NotFoundException if the tournament with the given ID does not exist in the persistent data store
    */
   TournamentStandingsTreeDto generateFirstRoundMatches(long tournamentId, TournamentStandingsTreeDto tree)
       throws ValidationException, ConflictException, NotFoundException;

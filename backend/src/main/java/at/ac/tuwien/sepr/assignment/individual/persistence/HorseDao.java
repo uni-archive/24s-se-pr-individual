@@ -66,6 +66,11 @@ public interface HorseDao {
    */
   Horse deleteById(long id) throws NotFoundException, ConflictException;
 
-  // TODO comment
+  /**
+   * This method finds and retrieves horses by their IDs.
+   *
+   * @param horseIds a set of horse IDs
+   * @return a collection of Horse entities that match the given IDs
+   */
   Collection<Horse> findHorsesById(Set<Long> horseIds);
 }

@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS horse
   date_of_birth DATE NOT NULL,
   height NUMERIC(4,2),
   weight NUMERIC(7,2),
-  // TODO handle optional everywhere
   breed_id BIGINT REFERENCES breed(id)
 );
 

@@ -98,7 +98,13 @@ public class TournamentMapper {
     );
   }
 
-  // todo javadocs
+  /**
+   * This method retrieves a horse from a map using the horseId from a participant.
+   *
+   * @param participant the participant whose horseId is to be used
+   * @param map the map of horses
+   * @return the HorseDetailDto object if found, null otherwise
+   */
   private HorseDetailDto horseFromMap(TournamentParticipant participant, Map<Long, HorseDetailDto> map) {
     var horseId = participant.getHorseId();
     if (horseId == null) {
@@ -135,24 +141,32 @@ public class TournamentMapper {
   }
 
   /**
-   * Convert a tournament participant entity object to a {@link TournamentDetailParticipantDto}.
-   * The given map of horses needs to contain the breed of {@code horse}.
+   * This method converts a collection of TournamentTree entities into a TournamentStandingsTreeDto.
    *
-   * @param participant the participant to convert
-   * @param horses a map of horses identified by their id, required for mapping participants
-   * @return the converted {@link TournamentDetailParticipantDto}
+   * @param branches the collection of TournamentTree entities
+   * @param participants the map of TournamentDetailParticipantDto objects, identified by their id
+   * @return the TournamentStandingsTreeDto object representing the tournament tree
    */
   public TournamentStandingsTreeDto branchesToStandingsTree(Collection<TournamentTree> branches, Map<Long, TournamentDetailParticipantDto> participants) {
     LOG.trace("branchesToStandingsTree({}, {})", branches, participants);
     var branchesMap = branches.stream().collect(Collectors.toMap(TournamentTree::getId, Function.identity()));
-    LOG.info("test: {} ", branches);
     var rootEntity = branches.stream().filter(t -> t.getBranchPosition().equals(BranchPosition.FINAL_WINNER)).findFirst().get();
     var rootDto = findBranches(null, rootEntity.getId(), branchesMap, participants, 4);
 
     return rootDto;
   }
 
-  // todo javadoc
+  /**
+   * This method recursively finds branches in a tournament tree.
+   * It stops when the remaining depth is zero.
+   *
+   * @param lastDto the last TournamentStandingsTreeDto object
+   * @param currentId the current id of the branch
+   * @param branches the map of branches
+   * @param participants the map of participants
+   * @param remainingDepth the remaining depth of the tree
+   * @return the current TournamentStandingsTreeDto object
+   */
   private TournamentStandingsTreeDto findBranches(TournamentStandingsTreeDto lastDto, Long currentId,
                                                   Map<Long, TournamentTree> branches,
                                                   Map<Long, TournamentDetailParticipantDto> participants, int remainingDepth) {
@@ -165,9 +179,7 @@ public class TournamentMapper {
     List<TournamentStandingsTreeDto> currentBranches = null;
 
     if (currentBranch.getParticipantId() != null) {
-      LOG.info("{}", currentBranch.getParticipantId());
       currentParticipant = participants.get(currentBranch.getParticipantId());
-      LOG.info("{}", currentBranch.getParticipantId());
     }
     if (remainingDepth > 1) {
       currentBranches = new ArrayList<>();
@@ -187,13 +199,21 @@ public class TournamentMapper {
     return currentDto;
   }
 
-  // todo javadoc
+  /**
+   * This method converts a tournament tree to branches.
+   * It updates the participantId of each branch based on the horseId from the treeDto.
+   *
+   * @param tournamentId the id of the tournament
+   * @param treeDto the TournamentStandingsTreeDto object
+   * @param branches the collection of branches
+   * @param participants the collection of participants
+   * @return the updated collection of branches
+   */
   public Collection<TournamentTree> tournamentTreeToBranches(Long tournamentId, TournamentStandingsTreeDto treeDto,
                                                              Collection<TournamentTree> branches, Collection<TournamentParticipant> participants) {
     var root = branches.stream().filter(b -> b.getBranchPosition().equals(BranchPosition.FINAL_WINNER)).findFirst().get();
     var participantMap = participants.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
     root.setParticipantId(treeDto.thisParticipant() == null ? null : participantMap.get(treeDto.thisParticipant().horseId()).getId());
-    LOG.info("{}", treeDto);
 
     recursiveParticipantUpdate(treeDto.branches().get(0), BranchPosition.UPPER, branches, root.getId(), participantMap);
     recursiveParticipantUpdate(treeDto.branches().get(1), BranchPosition.LOWER, branches, root.getId(), participantMap);
@@ -202,11 +222,10 @@ public class TournamentMapper {
     return branches;
   }
 
-  public void recursiveParticipantUpdate(TournamentStandingsTreeDto treeDto, BranchPosition pos,
+  private void recursiveParticipantUpdate(TournamentStandingsTreeDto treeDto, BranchPosition pos,
                                          Collection<TournamentTree> branches, Long previousId, Map<Long, TournamentParticipant> participantMap) {
     var current = branches.stream().filter(b -> Objects.equals(b.getParentId(), previousId) && b.getBranchPosition().equals(pos)).findFirst().get();
     current.setParticipantId(treeDto.thisParticipant() == null ? null : participantMap.get(treeDto.thisParticipant().horseId()).getId());
-    LOG.info("{}, {}", current.getParticipantId(), treeDto.thisParticipant());
 
     if (treeDto.branches() == null || treeDto.branches().size() != 2) {
       return;
@@ -216,7 +235,14 @@ public class TournamentMapper {
     recursiveParticipantUpdate(treeDto.branches().get(1), BranchPosition.LOWER, branches, current.getId(), participantMap);
   }
 
-  // todo javadoc
+  /**
+   * This method determines the rounds reached for each participant in a tournament.
+   * It returns a map of participants and the rounds they reached.
+   *
+   * @param participants the collection of participants
+   * @param tree the TournamentStandingsTreeDto object
+   * @return the map of participants and the rounds they reached
+   */
   public Map<TournamentParticipant, Integer> determineRoundsReachedForParticipants(Collection<TournamentParticipant> participants,
                                                                                    TournamentStandingsTreeDto tree) {
     Map<TournamentParticipant, Integer> out = new HashMap<>();

@@ -51,7 +51,7 @@ export class TournamentService {
     if (searchParams.endDate) {
       params = params.append('endDate', formatIsoDate(searchParams.endDate));
     }
-    if (searchParams.limit) { // todo implement limit in search page
+    if (searchParams.limit) {
       params = params.append('limit', searchParams.limit);
     }
     return this.http.get<TournamentListDto[]>(baseUri, { params })
@@ -84,18 +84,20 @@ export class TournamentService {
       }));
   }
 
-  /** todo javadoc
-   * Get a single tournament by its id.
+  /**
+   * Update tournament standings.
    * @param id the id of the tournament to get
+   * @param updatedStandings Updated standings
    * @return an Observable for the tournament
    */
   public updateStandingsTreeById(id: number, updatedStandings: TournamentStandingsTreeDto): Observable<TournamentStandingsTreeDto> {
     return this.http.put<TournamentStandingsTreeDto>(`${baseUri}/${id}/standings`, updatedStandings);
   }
 
-  /** todo javadoc
-   * Get a single tournament by its id.
+  /**
+   * Generate first round matches.
    * @param id the id of the tournament to get
+   * @param currentTree Current standings
    * @return an Observable for the tournament
    */
   public generateFirstRounds(id: number, currentTree: TournamentStandingsTreeDto): Observable<TournamentStandingsTreeDto> {
