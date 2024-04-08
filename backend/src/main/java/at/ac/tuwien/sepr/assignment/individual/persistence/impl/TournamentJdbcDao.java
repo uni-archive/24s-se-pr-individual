@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -99,8 +100,9 @@ public class TournamentJdbcDao implements TournamentDao {
 
     tournament.setId(id);
 
+    int numPart = 0;
     for (var participant : toCreate.participants()) {
-      jdbcTemplate.update(SQL_CREATE_PARTICIPANT,
+      numPart += jdbcTemplate.update(SQL_CREATE_PARTICIPANT,
           id,
           participant.horseId(),
           participant.entryNumber());
@@ -167,34 +169,45 @@ public class TournamentJdbcDao implements TournamentDao {
   }
 
   @Override
-  public Collection<TournamentParticipant> getParticipantsByTournamentId(long id) {
+  public Collection<TournamentParticipant> getParticipantsByTournamentId(long id) throws NotFoundException {
     LOG.trace("getParticipantsByTournamentId({})", id);
-    return jdbcTemplate.query(SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID, this::mapParticipantRow, id);
+    var participants = jdbcTemplate.query(SQL_FIND_PARTICIPANTS_BY_TOURNAMENT_ID, this::mapParticipantRow, id);
+    if (participants.isEmpty()) {
+      throw new NotFoundException("No participants with tournament ID %d found".formatted(id));
+    }
+    return participants;
   }
 
   @Override
-  public Collection<TournamentTree> getBranchesByTournamentId(long id) {
+  public Collection<TournamentTree> getBranchesByTournamentId(long id) throws NotFoundException {
     LOG.trace("getStandingsById({})", id);
-    return jdbcTemplate.query(SQL_FIND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
+    var out = jdbcTemplate.query(SQL_FIND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
+    if (out.isEmpty()) {
+      throw new NotFoundException("No branches with tournament ID %d found".formatted(id));
+    }
+    return out;
   }
 
   @Override
-  public Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id) {
+  public Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id) throws NotFoundException {
     LOG.trace("getStandingsById({})", id);
-    return jdbcTemplate.query(SQL_FIND_FIRST_ROUND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
+    var out = jdbcTemplate.query(SQL_FIND_FIRST_ROUND_BRANCHES_BY_TOURNAMENT_ID, this::mapBranchRow, id);
+    if (out.isEmpty()) {
+      throw new NotFoundException("No branches with tournament ID %d found".formatted(id));
+    }
+    return out;
   }
 
   @Override
   public Collection<TournamentParticipant> getParticipationsForHorseIds(Collection<Long> horseIds) {
     LOG.trace("getParticipationsForHorseIds({})", horseIds);
-    LOG.info("{}", horseIds);
     return jdbcNamed.query(SQL_FIND_PARTICIPANTS_BY_HORSE_IDS, Map.of("ids", horseIds), this::mapParticipantRow);
   }
 
   @Override
-  public void updateStandings(Collection<TournamentTree> branches) {
+  public void updateStandings(Collection<TournamentTree> branches) throws NotFoundException, ConflictException {
     var branchesList = new ArrayList<>(branches);
-    jdbcTemplate.batchUpdate(SQL_UPDATE_BRANCHES, new BatchPreparedStatementSetter() {
+    var affected = jdbcTemplate.batchUpdate(SQL_UPDATE_BRANCHES, new BatchPreparedStatementSetter() {
       @Override
       public void setValues(PreparedStatement ps, int i) throws SQLException {
         var b = branchesList.get(i);
@@ -210,12 +223,19 @@ public class TournamentJdbcDao implements TournamentDao {
         return branchesList.size();
       }
     });
+    var affectedTotal = Arrays.stream(affected).reduce(0, Integer::sum);
+    if (affectedTotal == 0)
+      throw new NotFoundException("Branches probably do not exist. Affected rows: {}".formatted(affectedTotal));
+
+    if (affectedTotal != branches.size())
+      throw new ConflictException("Error while updating branches", List.of("Invalid number of branches affected. Affected rows: {}".formatted(affectedTotal)));
+
   }
 
   @Override
-  public void updateParticipants(Collection<TournamentParticipant> participants) {
+  public void updateParticipants(Collection<TournamentParticipant> participants) throws NotFoundException, ConflictException {
     var participantsList = new ArrayList<>(participants);
-    jdbcTemplate.batchUpdate(SQL_UPDATE_PARTICIPANTS, new BatchPreparedStatementSetter() {
+    var affected = jdbcTemplate.batchUpdate(SQL_UPDATE_PARTICIPANTS, new BatchPreparedStatementSetter() {
       @Override
       public void setValues(PreparedStatement ps, int i) throws SQLException {
         var b = participantsList.get(i);
@@ -228,6 +248,13 @@ public class TournamentJdbcDao implements TournamentDao {
         return participantsList.size();
       }
     });
+    var affectedTotal = Arrays.stream(affected).reduce(0, Integer::sum);
+    if (affectedTotal == 0)
+      throw new NotFoundException("Branches probably do not exist. Affected rows: {}".formatted(affectedTotal));
+
+    if (affectedTotal != participantsList.size())
+      throw new ConflictException("Error while updating branches", List.of("Invalid number of branches affected. Affected rows: {}".formatted(affectedTotal)));
+
   }
 
   private TournamentParticipant mapParticipantRow(ResultSet result, int rownum) throws SQLException {

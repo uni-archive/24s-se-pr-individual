@@ -55,11 +55,17 @@ public class TournamentServiceImpl implements TournamentService {
   }
 
   @Override
-  public TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException {
+  public TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException, NotFoundException {
     LOG.info("Creating tournament with name {}", toCreate.name());
-    TournamentDetailDto tournament = mapper.createDtoToEntity(toCreate);
-    var created = dao.create(tournament);
-    return null; // todo CHANGE THIS
+    validator.validateTournament(toCreate);
+    TournamentDetailDto tournamentDetail = mapper.createDtoToEntity(toCreate);
+    var tournament = dao.create(tournamentDetail);
+    var participantEntities = dao.getParticipantsByTournamentId(tournament.getId());
+    var horseMap = horseService.findHorsesByIds(
+            participantEntities.stream().map(TournamentParticipant::getHorseId).collect(Collectors.toSet()))
+        .collect(Collectors.toMap(HorseDetailDto::id, Function.identity()));
+    var participants = participantEntities.stream().map(p -> mapper.participantToDetailDto(p, horseMap)).collect(Collectors.toList());
+    return mapper.entitiesToDetailDto(tournament, participants);
   }
 
   @Override
@@ -100,7 +106,7 @@ public class TournamentServiceImpl implements TournamentService {
   @Override
   public TournamentStandingsTreeDto updateStandings(long tournamentId, TournamentStandingsTreeDto toUpdate) throws ValidationException, ConflictException, NotFoundException {
     LOG.trace("updateStandings({}, {})", tournamentId, toUpdate);
-    validator.validateForStandingsUpdate(toUpdate);
+    validator.validateForStandingsUpdate(toUpdate, 8);
 
     var participantEntities = dao.getParticipantsByTournamentId(tournamentId);
     var participantEntityMap = participantEntities.stream().collect(Collectors.toMap(TournamentParticipant::getHorseId, Function.identity()));
@@ -155,12 +161,8 @@ public class TournamentServiceImpl implements TournamentService {
         return -horseMap.get(o1.getHorseId()).name().compareTo(horseMap.get(o1.getHorseId()).name());
       }
     }).toList();
-    LOG.info("{}", horsePoints);
-    LOG.info("{}", participantsSorted.stream().map(TournamentParticipant::getHorseId).toList());
     var firstRoundBranches = dao.getFirstRoundBranchesByTournamentId(tournamentId).stream().sorted(Comparator.comparing(TournamentTree::getFirstRoundIndex)).toList();
     for (int i = 0; i < 8 / 2; i++) {
-      LOG.info("i: {}, {}", firstRoundBranches.get(i).getFirstRoundIndex(), participantsSorted.get(i).getHorseId());
-      LOG.info("i+1: {}, {}", firstRoundBranches.get(i+1).getFirstRoundIndex(), participantsSorted.get(participantsSorted.size() - i - 1).getHorseId());
       firstRoundBranches.get(i * 2).setParticipantId(participantsSorted.get(i).getId());
       firstRoundBranches.get(i * 2 + 1).setParticipantId(participantsSorted.get(participantsSorted.size() - i - 1).getId());
     }

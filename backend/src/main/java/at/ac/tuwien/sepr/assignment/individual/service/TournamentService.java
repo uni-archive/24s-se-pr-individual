@@ -33,7 +33,7 @@ public interface TournamentService {
    * @throws ValidationException if the tournament data is invalid.
    * @throws ConflictException if the tournament already exists.
    */
-  TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException;
+  TournamentDetailDto create(TournamentCreateDto toCreate) throws ValidationException, ConflictException, NotFoundException;
 
   /**
    * Get the standings of a tournament from the persistent data store.

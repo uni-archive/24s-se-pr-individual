@@ -56,11 +56,15 @@ public class TournamentEndpoint {
       return ResponseEntity.status(HttpStatus.CREATED).body(created);
     } catch (ValidationException e) {
       HttpStatus status = HttpStatus.BAD_REQUEST;
-      logClientError(status, "Invalid horse data", e);
+      logClientError(status, "Invalid tournament data", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    }  catch (NotFoundException e) {
+      HttpStatus status = HttpStatus.BAD_REQUEST;
+      logClientError(status, "Tournament specifies horses which do not exist", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     } catch (ConflictException e) {
       HttpStatus status = HttpStatus.CONFLICT;
-      logClientError(status, "Horse already exists", e);
+      logClientError(status, "Invalid horses", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }
@@ -114,6 +118,14 @@ public class TournamentEndpoint {
     } catch (NotFoundException e) {
       HttpStatus status = HttpStatus.NOT_FOUND;
       logClientError(status, "Horse to update not found", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    } catch (ValidationException e) {
+      HttpStatus status = HttpStatus.BAD_REQUEST;
+      logClientError(status, "Invalid tournament data", e);
+      throw new ResponseStatusException(status, e.getMessage(), e);
+    } catch (ConflictException e) {
+      HttpStatus status = HttpStatus.CONFLICT;
+      logClientError(status, "Invalid horses", e);
       throw new ResponseStatusException(status, e.getMessage(), e);
     }
   }

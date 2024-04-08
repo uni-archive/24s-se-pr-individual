@@ -51,7 +51,7 @@ public interface TournamentDao {
    * @param id the id of the tournament to get.
    * @return the participants of the tournament.
    */
-  Collection<TournamentParticipant> getParticipantsByTournamentId(long id);
+  Collection<TournamentParticipant> getParticipantsByTournamentId(long id) throws NotFoundException;
 
 
   /**
@@ -60,7 +60,7 @@ public interface TournamentDao {
    * @param id the id of the tournament to get.
    * @return the standing branches of the tournament.
    */
-  Collection<TournamentTree> getBranchesByTournamentId(long id);
+  Collection<TournamentTree> getBranchesByTournamentId(long id) throws NotFoundException;
 
   /**
    * Get the standing branches of a tournament from the persistent data store.
@@ -68,7 +68,7 @@ public interface TournamentDao {
    * @param id the id of the tournament to get.
    * @return the standing branches of the tournament.
    */
-  Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id);
+  Collection<TournamentTree> getFirstRoundBranchesByTournamentId(long id) throws NotFoundException;
 
 
   /** TODO
@@ -76,7 +76,7 @@ public interface TournamentDao {
    *
    * @param id the id of the tournament to get.
    */
-  void updateStandings(Collection<TournamentTree> branches);
+  void updateStandings(Collection<TournamentTree> branches) throws NotFoundException, ConflictException;
 
 
   /** TODO
@@ -84,7 +84,7 @@ public interface TournamentDao {
    *
    * @param id the id of the tournament to get.
    */
-  void updateParticipants(Collection<TournamentParticipant> participants);
+  void updateParticipants(Collection<TournamentParticipant> participants) throws NotFoundException, ConflictException;
 
 
   /** TODO
