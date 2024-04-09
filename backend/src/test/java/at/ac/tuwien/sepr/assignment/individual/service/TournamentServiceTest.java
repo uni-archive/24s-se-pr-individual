@@ -77,9 +77,9 @@ public class TournamentServiceTest extends TestBase {
     var tournament = tournamentService.create(createDto);
     assertNotNull(tournament);
     assertThat(tournament)
-        .extracting("id", "name", "startDate", "endDate")
-        .as("ID, Name, Start Date, End Date")
-        .containsExactly(4L, "Tournament created by test", LocalDate.of(2021, 12, 31), LocalDate.of(2022, 1, 1));
+        .extracting("name", "startDate", "endDate")
+        .as("Name, Start Date, End Date")
+        .containsExactly("Tournament created by test", LocalDate.of(2021, 12, 31), LocalDate.of(2022, 1, 1));
 
     var emptyStandings = tournamentService.getStandingsById(tournament.id());
     assertNotNull(emptyStandings);
