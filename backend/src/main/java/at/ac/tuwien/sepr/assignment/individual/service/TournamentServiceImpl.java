@@ -163,7 +163,13 @@ public class TournamentServiceImpl implements TournamentService {
       @Override
       public int compare(TournamentParticipant o1, TournamentParticipant o2) {
         var score1 = horsePoints.get(o1.getHorseId());
+        if (score1 == null) {
+          score1 = 0;
+        }
         var score2 = horsePoints.get(o2.getHorseId());
+        if (score2 == null) {
+          score2 = 0;
+        }
 
         if (!Objects.equals(score1, score2)) {
           return -score1.compareTo(score2);

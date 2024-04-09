@@ -12,6 +12,7 @@ import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.persistence.TournamentDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -19,6 +20,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.PreparedStatement;
@@ -90,6 +92,7 @@ public class TournamentJdbcDao implements TournamentDao {
   }
 
   @Override
+  @Transactional
   public Tournament create(TournamentDetailDto toCreate) throws ConflictException {
     LOG.trace("create({})", toCreate);
     var tournament = new Tournament()
@@ -104,10 +107,14 @@ public class TournamentJdbcDao implements TournamentDao {
 
     int numPart = 0;
     for (var participant : toCreate.participants()) {
-      numPart += jdbcTemplate.update(SQL_CREATE_PARTICIPANT,
-          id,
-          participant.horseId(),
-          participant.entryNumber());
+      try {
+        numPart += jdbcTemplate.update(SQL_CREATE_PARTICIPANT,
+            id,
+            participant.horseId(),
+            participant.entryNumber());
+      } catch (DataIntegrityViolationException e) {
+        throw new ConflictException("Could not create tournament", List.of("One or more participants do not exist"), e);
+      }
     }
 
     createTree(id);

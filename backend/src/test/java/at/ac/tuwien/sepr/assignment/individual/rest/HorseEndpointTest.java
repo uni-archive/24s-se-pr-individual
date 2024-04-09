@@ -131,4 +131,13 @@ public class HorseEndpointTest extends TestBase {
             tuple(-32L, "Luna", Sex.FEMALE, LocalDate.of(2018, 10, 10),
                 "Welsh Cob"));
   }
+
+  @Test
+  public void tryDeleteHorseInTournament() throws Exception {
+    mockMvc
+        .perform(MockMvcRequestBuilders
+            .delete("/horses/-21")
+            .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isConflict());
+  }
 }

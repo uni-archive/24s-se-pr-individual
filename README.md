@@ -30,8 +30,9 @@ Vergessen Sie nicht im Projekt ihren Namen und Matrikelnummer zu ersetzen.
 | 07.04. | 17h30     | 45min | TS19     | working on horse validation                                                     |
 | 08.04. | 19h30     | 45m   | TS19     | working on tournmanent validation                                               |
 | 08.04. | 20h15     | 45m   | TS15     | checkstyle fixing for backend                                                   |
+| 09.04. | 17h15     | 2h    | TS12     | junit tests                                                                     |
 
-**Gesamtsumme der Zeit**: 21h 
+**Gesamtsumme der Zeit**: 28h 
 
 ### TODO:
 * horse edit error handling?
