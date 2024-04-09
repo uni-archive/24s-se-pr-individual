@@ -162,7 +162,7 @@ public class TournamentDaoTest extends TestBase {
             BranchPosition.UPPER,
             BranchPosition.UPPER,
             BranchPosition.UPPER
-        );
+    );
   }
 
   @Test
